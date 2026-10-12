@@ -71,6 +71,16 @@ a {
   z-index: 5;
 }
 
+.map-topbar {
+  justify-content: flex-end;
+}
+
+.map-topbar .search {
+  width: min(420px, calc(100% - 52px));
+  flex: 1;
+  max-width: 420px;
+}
+
 .page-nav {
   display: flex;
   align-items: center;
@@ -185,6 +195,48 @@ a {
   display: grid;
   grid-template-columns: 304px 1fr;
   min-height: 0;
+}
+
+.map-full {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.pin-card {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(340px, calc(100% - 32px));
+  max-width: 340px;
+  max-height: min(70dvh, 520px);
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 14px 16px 16px;
+}
+
+.pin-card > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pin-card-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.pin-card h2 {
+  display: block;
+  font-size: 15px;
+  padding-right: 28px;
 }
 
 .panel {
@@ -432,19 +484,22 @@ h2 {
   flex: 1;
 }
 
-.details dl {
+.details dl,
+.pin-card dl {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px 12px;
   margin: 0;
 }
 
-.details dt {
+.details dt,
+.pin-card dt {
   font-size: 12px;
   color: #66736f;
 }
 
-.details dd {
+.details dd,
+.pin-card dd {
   margin: 4px 0 0;
 }
 
@@ -660,6 +715,11 @@ h2 {
 @media (max-width: 900px) {
   .search {
     width: 168px;
+  }
+
+  .map-topbar .search {
+    width: auto;
+    max-width: none;
   }
 
   .workspace {

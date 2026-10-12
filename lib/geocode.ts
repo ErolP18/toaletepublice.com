@@ -76,8 +76,10 @@ function zoomFor(addresstype?: string) {
     case "city":
     case "municipality":
     case "administrative":
-    case "county":
       return 13;
+    case "county":
+    case "state":
+      return 9;
     default:
       return 16;
   }
