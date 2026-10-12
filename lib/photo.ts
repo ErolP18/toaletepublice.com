@@ -10,7 +10,7 @@ const TYPES: Record<string, string> = {
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "toilets");
 
-export function isUploadPath(value: string | null | undefined) {
+export function isUploadPath(value: string | null | undefined): value is string {
   return Boolean(value?.startsWith("/uploads/toilets/") && !value.includes(".."));
 }
 

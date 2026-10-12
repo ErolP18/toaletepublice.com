@@ -1,5 +1,8 @@
+import type { Feature, Polygon } from "geojson";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import outline from "@/data/romania-outline.json";
+
+const outlineFeature = outline as Feature<Polygon>;
 
 type Position = [number, number];
 type Ring = Position[];
@@ -16,14 +19,14 @@ function reverseRing(ring: Ring): Ring {
   return [...ring].reverse();
 }
 
-export const romaniaOutline = outline;
+export const romaniaOutline = outlineFeature;
 
 export const romaniaMask = {
   type: "Feature" as const,
   properties: {},
   geometry: {
     type: "Polygon" as const,
-    coordinates: [OUTER, reverseRing(outline.geometry.coordinates[0] as Ring)],
+    coordinates: [OUTER, reverseRing(outlineFeature.geometry.coordinates[0] as Ring)],
   },
 };
 
@@ -36,7 +39,7 @@ export function applyRomaniaMask(map: MapLibreMap) {
   });
   map.addSource("romania-outline", {
     type: "geojson",
-    data: outline,
+    data: outlineFeature,
   });
 
   map.addLayer({
@@ -62,5 +65,5 @@ export function applyRomaniaMask(map: MapLibreMap) {
 
 export function isClickOutsideRomania(map: MapLibreMap, point: { x: number; y: number }) {
   if (!map.getLayer("romania-mask-fill")) return false;
-  return map.queryRenderedFeatures(point, { layers: ["romania-mask-fill"] }).length > 0;
+  return map.queryRenderedFeatures([point.x, point.y], { layers: ["romania-mask-fill"] }).length > 0;
 }
