@@ -1,16 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Instrument_Serif } from "next/font/google";
+import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-ui",
   subsets: ["latin", "latin-ext"],
-});
-
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
-  subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -29,10 +24,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="ro"
-      className={`${geistSans.variable} ${instrument.variable} h-full antialiased`}
-    >
+    <html lang="ro" className={`${ibmPlexSans.variable} ${ibmPlexSans.className} h-full`}>
       <body className="min-h-full">
         <link rel="stylesheet" href="/maplibre-gl.css" />
         {children}

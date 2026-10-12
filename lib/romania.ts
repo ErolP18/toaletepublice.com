@@ -1,15 +1,15 @@
 export const ROMANIA_CENTER: [number, number] = [24.97, 45.94];
 
-/** Official-ish envelope: Beba Veche → Sulina → Zimnicea → Horodiștea. */
+/** Official envelope: Beba Veche → Delta → Zimnicea → Horodiștea. */
 export const ROMANIA_BOUNDS: [[number, number], [number, number]] = [
-  [20.22, 43.58],
-  [29.76, 48.3],
+  [20.26, 43.62],
+  [30.05, 48.27],
 ];
 
-/** Slightly padded so Hungary, Serbia, Bulgaria, Moldova and Ukraine stay in view. */
+/** Tight pad around the country so the paper mask stays in frame. */
 export const ROMANIA_MAX_BOUNDS: [[number, number], [number, number]] = [
-  [18.6, 42.6],
-  [31.4, 49.2],
+  [19.55, 43.05],
+  [30.75, 48.85],
 ];
 
 export const MAP_STYLES = {

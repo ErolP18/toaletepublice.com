@@ -6,19 +6,24 @@ Harta toaletelor publice din România. Proiect personal.
 
 Baza e [OpenStreetMap](https://www.openstreetmap.org/copyright), desenată cu [MapLibre](https://maplibre.org/) și tile-uri vectoriale [OpenFreeMap](https://openfreemap.org/). Nu e nevoie de cheie API.
 
-Acoperă toată țara: județe, orașe, sate, străzi, parcuri, râuri, Carpați, Deltă. La zoom mare apar numele străzilor.
-
 ## Date
 
-Punctele din `data/toilets.json` sunt un schelet, ca harta să fie folosibilă. Coordonatele oficiale vor veni de la primării și consilii județene.
+Toaletele stau în [Supabase](https://supabase.com) când `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e setat; altfel în SQLite local (`data/toilets.db`).
 
-Propunerile adăugate din interfață se salvează local, în browser.
+1. Rulează `supabase/schema.sql` în SQL Editor.
+2. Pune cheia publishable (și secretul, pentru admin) în `.env.local`.
+3. `npm run db:seed`
+
+Publicul vede toaletele confirmate și exemplele; propunerile rămân doar în admin.
+
+Admin: [/admin](http://localhost:3000/admin), parolă din `.env.local`.
 
 ## Rulare
 
 ```bash
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Apoi deschide [http://localhost:3000](http://localhost:3000).
+Apoi [http://localhost:3000](http://localhost:3000).

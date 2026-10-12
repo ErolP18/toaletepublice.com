@@ -10,10 +10,12 @@ import {
 } from "maplibre-gl";
 import {
   MAP_STYLES,
+  ROMANIA_BOUNDS,
   ROMANIA_CENTER,
   ROMANIA_MAX_BOUNDS,
   type MapStyleId,
 } from "@/lib/romania";
+import { applyRomaniaMask, isClickOutsideRomania } from "@/lib/romania-mask";
 import { ensureMapLibreWorker } from "@/lib/maplibre-worker";
 import type { Toilet } from "@/lib/types";
 
@@ -38,7 +40,7 @@ function pinElement(kind: "toilet" | "draft" | "active") {
   el.innerHTML =
     kind === "draft"
       ? `<span class="map-pin-dot"></span>`
-      : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10.5V8a5 5 0 0 1 10 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 11h12v8.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19.5V11Z" fill="currentColor" opacity=".15" stroke="currentColor" stroke-width="1.6"/><path d="M10 14.5v4M14 14.5v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+      : `<svg viewBox="0 0 28 36" aria-hidden="true"><path fill="currentColor" d="M14 1.4c5.8 0 10.5 4.6 10.5 10.4 0 8.6-10.5 23-10.5 23S3.5 20.4 3.5 11.8C3.5 6 8.2 1.4 14 1.4z"/><circle cx="14" cy="12" r="4.2" fill="#f4efe4"/></svg>`;
   return el;
 }
 
@@ -60,10 +62,12 @@ export default function MapView({
   const onSelectRef = useRef(onSelect);
   const onMapClickRef = useRef(onMapClick);
   const onFlyCompleteRef = useRef(onFlyComplete);
+  const addModeRef = useRef(addMode);
 
   onSelectRef.current = onSelect;
   onMapClickRef.current = onMapClick;
   onFlyCompleteRef.current = onFlyComplete;
+  addModeRef.current = addMode;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -73,8 +77,8 @@ export default function MapView({
       container: containerRef.current,
       style: MAP_STYLES[styleId].url,
       center: ROMANIA_CENTER,
-      zoom: 6.15,
-      minZoom: 5.2,
+      zoom: 6.2,
+      minZoom: 5.5,
       maxZoom: 19,
       maxBounds: ROMANIA_MAX_BOUNDS,
       attributionControl: false,
@@ -95,7 +99,17 @@ export default function MapView({
       "bottom-right",
     );
 
+    map.on("style.load", () => {
+      applyRomaniaMask(map);
+    });
+    map.once("load", () => {
+      map.fitBounds(ROMANIA_BOUNDS, {
+        padding: { top: 36, bottom: 40, left: 28, right: 28 },
+        duration: 0,
+      });
+    });
     map.on("click", (event) => {
+      if (addModeRef.current && isClickOutsideRomania(map, event.point)) return;
       onMapClickRef.current(event.lngLat.lat, event.lngLat.lng);
     });
 

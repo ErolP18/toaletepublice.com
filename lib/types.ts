@@ -23,6 +23,8 @@ export type Toilet = {
   county: string;
   address?: string;
   hours?: string;
+  photo?: string;
+  price?: string;
   accessible: boolean;
   free: boolean;
   type: ToiletType;
@@ -39,6 +41,7 @@ export type ToiletDraft = {
   county: string;
   address: string;
   hours: string;
+  price: string;
   accessible: boolean;
   free: boolean;
   type: ToiletType;
