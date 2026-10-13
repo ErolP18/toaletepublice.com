@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Accessibility, Crosshair, List, Search, X } from "lucide-react";
 import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
@@ -38,6 +38,14 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
   const localities = useMemo(() => groupToiletsByLocality(visible), [visible]);
   const selected = toilets.find((toilet) => toilet.id === selectedId) ?? null;
   const selectedVisible = Boolean(selected && visible.some((item) => item.id === selected.id));
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setListOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   function locateMe() {
     setLocateError("");
@@ -107,7 +115,9 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
   function selectLocality(lat: number, lng: number) {
     setSelectedId(null);
     setFlyTo({ lat, lng, zoom: 14 });
-    setListOpen(false);
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      setListOpen(false);
+    }
   }
 
   return (
@@ -139,19 +149,20 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
           </button>
           <button
             type="button"
-            className="icon-btn list-toggle"
+            className={`icon-btn list-toggle${listOpen ? " is-on" : ""}`}
             onClick={() => setListOpen((open) => !open)}
-            aria-label="Listă toalete"
+            aria-label={listOpen ? "Închide lista" : "Deschide lista"}
+            aria-expanded={listOpen}
           >
-            <List size={16} />
+            {listOpen ? <X size={16} /> : <List size={16} />}
           </button>
         </div>
       </header>
 
       {locateError ? <p className="banner warn">{locateError}</p> : null}
 
-      <div className="workspace">
-        <aside className={`panel ${listOpen ? "is-open" : ""}`}>
+      <div className={`workspace${listOpen ? " is-list-open" : ""}`}>
+        <aside className={`panel${listOpen ? " is-open" : ""}`} aria-hidden={!listOpen}>
           <div className="panel-head">
             <p className="stats-line">
               {visible.length} {visible.length === 1 ? "toaletă" : "toalete"}
@@ -220,6 +231,14 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
         </aside>
 
         <section className="map-wrap">
+          {listOpen ? (
+            <button
+              type="button"
+              className="panel-scrim"
+              onClick={() => setListOpen(false)}
+              aria-label="Închide lista"
+            />
+          ) : null}
           <MapView
             toilets={visible}
             selectedId={selectedId}

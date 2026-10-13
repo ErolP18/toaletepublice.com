@@ -52,6 +52,7 @@ a {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overflow-x: clip;
 }
 
 .about {
@@ -63,9 +64,10 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
   min-height: 48px;
-  padding: 0 20px;
+  padding: env(safe-area-inset-top) max(12px, env(safe-area-inset-right)) 0
+    max(12px, env(safe-area-inset-left));
   background: var(--paper);
   border-bottom: 1px solid var(--line);
   z-index: 5;
@@ -103,7 +105,10 @@ a {
   display: flex;
   align-items: center;
   gap: 6px;
-  width: 240px;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  max-width: 420px;
   background: white;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -175,6 +180,12 @@ a {
   width: 32px;
   height: 32px;
   padding: 0;
+  flex-shrink: 0;
+}
+
+.icon-btn.is-on {
+  border-color: var(--pine);
+  color: var(--pine);
 }
 
 .banner {
@@ -193,8 +204,13 @@ a {
 .workspace {
   flex: 1;
   display: grid;
-  grid-template-columns: 304px 1fr;
+  grid-template-columns: 1fr;
   min-height: 0;
+  position: relative;
+}
+
+.workspace.is-list-open {
+  grid-template-columns: min(320px, 36vw) 1fr;
 }
 
 .map-full {
@@ -239,8 +255,12 @@ a {
   padding-right: 28px;
 }
 
+.panel-scrim {
+  display: none;
+}
+
 .panel {
-  display: flex;
+  display: none;
   flex-direction: column;
   min-height: 0;
   height: 100%;
@@ -248,6 +268,11 @@ a {
   background: var(--paper);
   border-right: 1px solid var(--line);
   padding: 16px 18px 20px;
+}
+
+.workspace.is-list-open .panel,
+.panel.is-open {
+  display: flex;
 }
 
 .panel-head {
@@ -272,7 +297,7 @@ h2 {
 }
 
 .close-panel {
-  display: none;
+  display: inline-flex;
 }
 
 .filters {
@@ -468,6 +493,7 @@ h2 {
 .add-form,
 .details {
   overflow: auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -634,8 +660,12 @@ h2 {
   box-shadow: var(--shadow) !important;
 }
 
-.admin-workspace {
-  grid-template-columns: 360px 1fr;
+.workspace.admin-workspace {
+  grid-template-columns: min(360px, 42vw) 1fr;
+}
+
+.workspace.admin-workspace .panel {
+  display: flex;
 }
 
 .admin-panel {
@@ -713,39 +743,92 @@ h2 {
 }
 
 @media (max-width: 900px) {
+  .topbar,
+  .about-top {
+    min-height: 56px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: 8px;
+  }
+
   .search {
-    width: 168px;
-  }
-
-  .map-topbar .search {
-    width: auto;
     max-width: none;
+    height: 40px;
   }
 
-  .workspace {
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .place-list .locality,
+  .place-list .toilet-row {
+    min-height: 44px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .workspace,
+  .workspace.is-list-open,
+  .workspace.admin-workspace {
     grid-template-columns: 1fr;
   }
 
-  .panel {
+  .workspace.admin-workspace {
+    grid-template-rows: minmax(220px, 42dvh) 1fr;
+  }
+
+  .panel-scrim {
+    display: block;
     position: absolute;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
+    inset: 0;
+    z-index: 3;
+    border: 0;
+    padding: 0;
+    background: rgba(23, 33, 31, 0.28);
+  }
+
+  .panel,
+  .workspace.is-list-open .panel {
+    display: flex;
+    position: absolute;
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
     z-index: 4;
-    max-height: 58dvh;
+    width: auto;
+    height: auto;
+    max-height: min(68dvh, 640px);
     border: 1px solid var(--line);
-    border-radius: 18px;
+    border-radius: 16px;
     box-shadow: var(--shadow);
     transform: translateY(120%);
     transition: transform 0.25s ease;
+    pointer-events: none;
+    visibility: hidden;
   }
 
-  .panel.is-open {
+  .panel.is-open,
+  .workspace.is-list-open .panel.is-open {
     transform: none;
+    pointer-events: auto;
+    visibility: visible;
   }
 
-  .close-panel {
-    display: inline-flex;
+  .workspace.admin-workspace .panel {
+    display: flex;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    max-height: none;
+    height: 100%;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    box-shadow: none;
   }
 
   .filters {
@@ -761,8 +844,14 @@ h2 {
   }
 }
 
-@media (min-width: 901px) {
-  .list-toggle {
-    display: none;
+@media (max-width: 600px) {
+  .panel,
+  .workspace.is-list-open .panel {
+    max-height: min(58dvh, 520px);
+  }
+
+  .details dl,
+  .pin-card dl {
+    grid-template-columns: 1fr;
   }
 }
