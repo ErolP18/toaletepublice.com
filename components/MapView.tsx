@@ -37,10 +37,7 @@ function pinElement(kind: "toilet" | "draft" | "active") {
   const el = document.createElement("button");
   el.type = "button";
   el.className = `map-pin map-pin-${kind}`;
-  el.innerHTML =
-    kind === "draft"
-      ? `<span class="map-pin-dot"></span>`
-      : `<svg viewBox="0 0 28 36" aria-hidden="true"><path fill="currentColor" d="M14 1.4c5.8 0 10.5 4.6 10.5 10.4 0 8.6-10.5 23-10.5 23S3.5 20.4 3.5 11.8C3.5 6 8.2 1.4 14 1.4z"/><circle cx="14" cy="12" r="4.2" fill="#f4efe4"/></svg>`;
+  el.innerHTML = `<span class="map-pin-dot"></span>`;
   return el;
 }
 
@@ -149,7 +146,7 @@ export default function MapView({
         event.stopPropagation();
         onSelectRef.current(toilet.id);
       });
-      return new Marker({ element: el, anchor: "bottom" })
+      return new Marker({ element: el, anchor: "center" })
         .setLngLat([toilet.lng, toilet.lat])
         .addTo(map);
     });
@@ -162,7 +159,7 @@ export default function MapView({
     draftRef.current = null;
     if (!draftPoint) return;
     const el = pinElement("draft");
-    draftRef.current = new Marker({ element: el, anchor: "bottom" })
+    draftRef.current = new Marker({ element: el, anchor: "center" })
       .setLngLat([draftPoint.lng, draftPoint.lat])
       .addTo(map);
   }, [draftPoint]);

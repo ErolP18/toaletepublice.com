@@ -208,6 +208,7 @@ a {
   color: #5c6b67;
 }
 
+.ghost.is-on,
 .ghost[aria-pressed="true"] {
   border-color: var(--pine);
   color: var(--pine);
@@ -663,39 +664,35 @@ h2 {
 }
 
 .map-pin {
-  width: 28px;
-  height: 36px;
+  width: 18px;
+  height: 18px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--pine);
   cursor: pointer;
-  filter: drop-shadow(0 5px 6px rgba(23, 33, 31, 0.28));
-}
-
-.map-pin svg {
-  display: block;
-  width: 28px;
-  height: 36px;
 }
 
 .map-pin-active {
   color: var(--pin);
-  transform: scale(1.08);
+  width: 20px;
+  height: 20px;
 }
 
 .map-pin-draft {
-  width: 22px;
-  height: 22px;
+  width: 14px;
+  height: 14px;
+  color: var(--pin);
 }
 
 .map-pin-dot {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 100%;
+  height: 100%;
   border-radius: 99px;
-  background: var(--pin);
-  border: 3px solid white;
+  background: currentColor;
+  border: 2px solid #f4efe4;
+  box-shadow: 0 1px 4px rgba(23, 33, 31, 0.35);
 }
 
 .about-body {
@@ -744,6 +741,30 @@ h2 {
 
 .workspace.admin-workspace .panel {
   display: flex;
+}
+
+.admin-topbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-topbar .search,
+.admin-topbar .search-wrap {
+  width: 100%;
+  max-width: none;
+}
+
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.admin-topbar .list-toggle {
+  display: none;
 }
 
 .admin-panel {
@@ -849,20 +870,28 @@ h2 {
 }
 
 @media (max-width: 900px) {
-  .topbar:has(.admin-flag) {
-    flex-wrap: wrap;
-    align-items: flex-end;
+  .admin-topbar {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "nav actions"
+      "search search";
     row-gap: 8px;
   }
 
-  .topbar:has(.admin-flag) .topbar-actions {
-    width: 100%;
+  .admin-topbar .page-nav {
+    grid-area: nav;
   }
 
-  .topbar:has(.admin-flag) .topbar-actions .search-wrap {
-    flex: 1;
-    width: auto;
-    max-width: none;
+  .admin-topbar .search-wrap {
+    grid-area: search;
+  }
+
+  .admin-topbar .admin-actions {
+    grid-area: actions;
+  }
+
+  .admin-topbar .list-toggle {
+    display: inline-flex;
   }
 
   .topbar,
@@ -897,12 +926,9 @@ h2 {
 
   .workspace,
   .workspace.is-list-open,
-  .workspace.admin-workspace {
+  .workspace.admin-workspace,
+  .workspace.admin-workspace.is-list-open {
     grid-template-columns: 1fr;
-  }
-
-  .workspace.admin-workspace {
-    grid-template-rows: minmax(220px, 42dvh) 1fr;
   }
 
   .panel-scrim {
@@ -943,20 +969,24 @@ h2 {
   }
 
   .workspace.admin-workspace .panel {
-    display: flex;
-    position: relative;
-    left: auto;
-    right: auto;
-    bottom: auto;
+    position: absolute;
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    height: auto;
+    max-height: min(68dvh, 640px);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    transform: translateY(120%);
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .workspace.admin-workspace .panel.is-open {
     transform: none;
-    visibility: visible;
     pointer-events: auto;
-    max-height: none;
-    height: 100%;
-    border-radius: 0;
-    border: 0;
-    border-bottom: 1px solid var(--line);
-    box-shadow: none;
+    visibility: visible;
   }
 
   .filters {

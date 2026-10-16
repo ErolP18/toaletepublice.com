@@ -39,6 +39,7 @@ export default function AdminApp() {
   const [status, setStatus] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addMode, setAddMode] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [draft, setDraft] = useState<ToiletDraft | null>(null);
   const [edit, setEdit] = useState<Toilet | null>(null);
   const [geocoding, setGeocoding] = useState(false);
@@ -78,17 +79,24 @@ export default function AdminApp() {
         setAddMode(false);
         setDraft(null);
         setPhotoFile(null);
+        setListOpen(true);
         return;
       }
       if (selectedId) {
         setEdit(null);
         setSelectedId(null);
         setPhotoFile(null);
+        setListOpen(true);
+        return;
       }
+      setListOpen(false);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [addMode, selectedId, busy]);
+
+  const panelOpen = addMode || Boolean(edit) || listOpen;
+  const browsingList = !addMode && !edit;
 
   const filtered = useMemo(() => {
     return toilets.filter((toilet) => {
@@ -184,6 +192,7 @@ export default function AdminApp() {
 
   function startAdd() {
     setAddMode(true);
+    setListOpen(true);
     setSelectedId(null);
     setEdit(null);
     setDraft(null);
@@ -196,12 +205,23 @@ export default function AdminApp() {
     setAddMode(false);
     setDraft(null);
     setPhotoFile(null);
+    setListOpen(true);
+  }
+
+  function closePanel() {
+    setAddMode(false);
+    setDraft(null);
+    setEdit(null);
+    setSelectedId(null);
+    setPhotoFile(null);
+    setListOpen(false);
   }
 
   function selectToilet(id: string) {
     const toilet = toilets.find((item) => item.id === id);
     setSelectedId(id);
     setAddMode(false);
+    setListOpen(true);
     setDraft(null);
     setEdit(toilet ? { ...toilet } : null);
     setPhotoFile(null);
@@ -324,23 +344,35 @@ export default function AdminApp() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
+      <header className="topbar admin-topbar">
         <nav className="page-nav">
           <Link href="/">Hartă</Link>
           <span className="admin-flag">Admin</span>
         </nav>
-        <div className="topbar-actions">
-          <SearchBox
-            value={placeQuery}
-            toilets={toilets}
-            placeholder="Comună, stradă"
-            ariaLabel="Caută comună sau stradă"
-            onChange={setPlaceQuery}
-            onSubmit={() => void goToQuery()}
-            onPick={applyPlaceSuggestion}
-          />
+        <SearchBox
+          value={placeQuery}
+          toilets={toilets}
+          placeholder="Comună, stradă"
+          ariaLabel="Caută comună sau stradă"
+          onChange={setPlaceQuery}
+          onSubmit={() => void goToQuery()}
+          onPick={applyPlaceSuggestion}
+        />
+        <div className="admin-actions">
           <button type="button" className="ghost" onClick={startAdd} aria-pressed={addMode}>
             Adaugă
+          </button>
+          <button
+            type="button"
+            className={`ghost list-toggle${listOpen && browsingList ? " is-on" : ""}`}
+            onClick={() => {
+              if (addMode || edit) closePanel();
+              else setListOpen((open) => !open);
+            }}
+            aria-expanded={panelOpen}
+            aria-label={panelOpen ? "Închide lista" : "Deschide lista"}
+          >
+            Listă
           </button>
           <button type="button" className="ghost" onClick={() => void logout()}>
             Ieșire
@@ -373,24 +405,34 @@ export default function AdminApp() {
         </p>
       ) : null}
 
-      <div className="workspace admin-workspace">
-        <aside className="panel admin-panel">
-          <div className="admin-tools">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Filtrează lista"
-              aria-label="Filtrează toaletele"
-            />
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="">Toate</option>
-              {Object.entries(toiletStatusLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className={`workspace admin-workspace${panelOpen ? " is-list-open" : ""}`}>
+        {listOpen && browsingList ? (
+          <button
+            type="button"
+            className="panel-scrim"
+            onClick={() => setListOpen(false)}
+            aria-label="Închide lista"
+          />
+        ) : null}
+        <aside className={`panel admin-panel${panelOpen ? " is-open" : ""}`}>
+          {browsingList ? (
+            <div className="admin-tools">
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Filtrează lista"
+                aria-label="Filtrează toaletele"
+              />
+              <select value={status} onChange={(event) => setStatus(event.target.value)}>
+                <option value="">Toate</option>
+                {Object.entries(toiletStatusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
           <p className="stats-line">
             {loading
               ? "Se încarcă…"
@@ -422,6 +464,7 @@ export default function AdminApp() {
                 setEdit(null);
                 setSelectedId(null);
                 setPhotoFile(null);
+                setListOpen(true);
               }}
               onDelete={() => void removeToilet(edit.id)}
               onRemovePhoto={() => void removePhoto(edit.id)}
