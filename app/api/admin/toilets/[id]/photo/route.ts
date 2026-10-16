@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { ensureDb } from "@/lib/db/ensure";
 import { getToilet, updateToilet } from "@/lib/db/toilets";
 import { deleteToiletPhoto, saveToiletPhoto } from "@/lib/photo";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: Ctx) {
-  await ensureDb();
   const { id } = await context.params;
   const existing = await getToilet(id);
   if (!existing) return NextResponse.json({ error: "Nu există." }, { status: 404 });
@@ -27,7 +25,6 @@ export async function POST(request: Request, context: Ctx) {
 }
 
 export async function DELETE(_request: Request, context: Ctx) {
-  await ensureDb();
   const { id } = await context.params;
   const existing = await getToilet(id);
   if (!existing) return NextResponse.json({ error: "Nu există." }, { status: 404 });

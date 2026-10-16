@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { isInsideRomaniaEnvelope } from "@/lib/romania";
-import { ensureDb } from "@/lib/db/ensure";
 import { createToilet, isToiletStatus, isToiletType, listAllToilets } from "@/lib/db/toilets";
 import { counties } from "@/lib/counties";
 
@@ -9,12 +8,10 @@ function readString(value: unknown) {
 }
 
 export async function GET() {
-  await ensureDb();
   return NextResponse.json(await listAllToilets());
 }
 
 export async function POST(request: Request) {
-  await ensureDb();
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) return NextResponse.json({ error: "Date invalide." }, { status: 400 });
 

@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { counties } from "@/lib/counties";
-import { ensureDb } from "@/lib/db/ensure";
 import { deleteToilet, getToilet, isToiletStatus, isToiletType, updateToilet } from "@/lib/db/toilets";
 import { deleteToiletPhoto } from "@/lib/photo";
 import { isInsideRomaniaEnvelope } from "@/lib/romania";
-import type { ToiletInsert } from "@/lib/db/schema";
+import type { ToiletWrite } from "@/lib/supabase/toilets";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -13,7 +12,6 @@ function readString(value: unknown) {
 }
 
 export async function PATCH(request: Request, context: Ctx) {
-  await ensureDb();
   const { id } = await context.params;
   const existing = await getToilet(id);
   if (!existing) return NextResponse.json({ error: "Nu există." }, { status: 404 });
@@ -21,7 +19,7 @@ export async function PATCH(request: Request, context: Ctx) {
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) return NextResponse.json({ error: "Date invalide." }, { status: 400 });
 
-  const patch: Partial<ToiletInsert> = {};
+  const patch: Partial<ToiletWrite> = {};
 
   if ("name" in body) {
     const name = readString(body.name);
@@ -74,7 +72,6 @@ export async function PATCH(request: Request, context: Ctx) {
 }
 
 export async function DELETE(_request: Request, context: Ctx) {
-  await ensureDb();
   const { id } = await context.params;
   const removed = await deleteToilet(id);
   if (!removed) return NextResponse.json({ error: "Nu există." }, { status: 404 });

@@ -8,15 +8,17 @@ Baza e [OpenStreetMap](https://www.openstreetmap.org/copyright), desenată cu [M
 
 ## Date
 
-Toaletele stau în [Supabase](https://supabase.com) când `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e setat; altfel în SQLite local (`data/toilets.db`).
+Toaletele stau doar în [Supabase](https://supabase.com). Nu există SQLite și nu se face seed la pornire.
 
 1. Rulează `supabase/schema.sql` în SQL Editor.
-2. Pune cheia publishable (și secretul, pentru admin) în `.env.local`.
-3. `npm run db:seed`
+2. Pune `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` și `SUPABASE_SECRET_KEY` în `.env.local` (și în Coolify).
+3. Opțional, o dată: `npm run db:seed`
 
 Publicul vede toaletele confirmate și exemplele; propunerile rămân doar în admin.
 
 Admin: [/admin](http://localhost:3000/admin), parolă din `.env.local`.
+
+În Coolify nu seta `DATABASE_URL`.
 
 ## Rulare
 
