@@ -19,6 +19,8 @@ type NominatimAddress = {
   house_number?: string;
 };
 
+export type PlaceKind = "street" | "locality" | "county" | "place";
+
 export type Place = {
   lat: number;
   lng: number;
@@ -27,6 +29,7 @@ export type Place = {
   city: string;
   county: string;
   label: string;
+  kind: PlaceKind;
 };
 
 export function matchCounty(value?: string, city?: string) {
@@ -59,26 +62,39 @@ export function streetFromAddress(address: NominatimAddress) {
   return street ? `${street}${house}` : "";
 }
 
-function zoomFor(addresstype?: string) {
+function kindFor(addresstype?: string): PlaceKind {
   switch (addresstype) {
     case "road":
     case "residential":
     case "pedestrian":
     case "path":
     case "building":
-      return 18;
-    case "neighbourhood":
-    case "suburb":
-    case "hamlet":
-    case "village":
-      return 15;
-    case "town":
-    case "city":
-    case "municipality":
-    case "administrative":
-      return 13;
+      return "street";
     case "county":
     case "state":
+      return "county";
+    case "city":
+    case "town":
+    case "village":
+    case "municipality":
+    case "hamlet":
+    case "suburb":
+    case "neighbourhood":
+      return "locality";
+    default:
+      return "place";
+  }
+}
+
+function zoomFor(addresstype?: string) {
+  switch (kindFor(addresstype)) {
+    case "street":
+      return 18;
+    case "locality":
+      return addresstype === "village" || addresstype === "hamlet" || addresstype === "suburb"
+        ? 15
+        : 13;
+    case "county":
       return 9;
     default:
       return 16;
@@ -108,16 +124,21 @@ function toPlace(
 ): Place | null {
   if (!isInsideRomaniaEnvelope(lat, lng)) return null;
   const city = localityFromAddress(address);
+  const street = streetFromAddress(address);
   return {
     lat,
     lng,
     zoom: zoomFor(addresstype),
-    address: streetFromAddress(address) || displayName,
+    address: street || displayName,
     city,
     county: matchCounty(address.county ?? address.state, city),
     label: displayName,
+    kind: street ? "street" : kindFor(addresstype),
   };
 }
+
+const searchCache = new Map<string, { expires: number; places: Place[] }>();
+const SEARCH_CACHE_MS = 10 * 60 * 1000;
 
 export async function reversePlace(lat: number, lng: number): Promise<Place | null> {
   const url = new URL("https://nominatim.openstreetmap.org/reverse");
@@ -144,13 +165,17 @@ export async function reversePlace(lat: number, lng: number): Promise<Place | nu
   );
 }
 
-export async function searchPlace(query: string): Promise<Place | null> {
+export async function searchPlaces(query: string): Promise<Place[]> {
+  const key = query.trim().toLocaleLowerCase("ro");
+  const cached = searchCache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.places;
+
   const url = new URL("https://nominatim.openstreetmap.org/search");
   url.searchParams.set("q", query);
   url.searchParams.set("countrycodes", "ro");
   url.searchParams.set("format", "jsonv2");
   url.searchParams.set("addressdetails", "1");
-  url.searchParams.set("limit", "5");
+  url.searchParams.set("limit", "8");
   url.searchParams.set("accept-language", "ro");
   url.searchParams.set("viewbox", "20.26,48.27,30.05,43.62");
 
@@ -162,6 +187,8 @@ export async function searchPlace(query: string): Promise<Place | null> {
     address?: NominatimAddress;
   }>;
 
+  const seen = new Set<string>();
+  const places: Place[] = [];
   for (const item of results) {
     const place = toPlace(
       Number(item.lat),
@@ -170,9 +197,120 @@ export async function searchPlace(query: string): Promise<Place | null> {
       item.display_name ?? query,
       item.addresstype,
     );
-    if (place) return place;
+    if (!place) continue;
+    const dedupe = `${place.kind}|${place.city}|${place.county}|${place.lat.toFixed(3)}|${place.lng.toFixed(3)}`;
+    if (seen.has(dedupe)) continue;
+    seen.add(dedupe);
+    places.push(place);
   }
-  return null;
+
+  searchCache.set(key, { expires: Date.now() + SEARCH_CACHE_MS, places });
+  return places;
+}
+
+export async function searchPlace(query: string): Promise<Place | null> {
+  return (await searchPlaces(query))[0] ?? null;
+}
+
+type PhotonFeature = {
+  geometry?: { coordinates?: [number, number] };
+  properties?: {
+    name?: string;
+    street?: string;
+    housenumber?: string;
+    city?: string;
+    district?: string;
+    county?: string;
+    state?: string;
+    country?: string;
+    osm_key?: string;
+    osm_value?: string;
+  };
+};
+
+function photonKind(osmKey?: string, osmValue?: string): PlaceKind {
+  if (osmKey === "highway") return "street";
+  if (osmValue === "county" || osmValue === "state") return "county";
+  if (
+    osmValue === "city" ||
+    osmValue === "town" ||
+    osmValue === "village" ||
+    osmValue === "municipality" ||
+    osmValue === "hamlet" ||
+    osmValue === "suburb" ||
+    osmValue === "neighbourhood"
+  ) {
+    return "locality";
+  }
+  return "place";
+}
+
+function photonToPlace(feature: PhotonFeature): Place | null {
+  const coords = feature.geometry?.coordinates;
+  const props = feature.properties ?? {};
+  if (!coords || coords.length < 2) return null;
+  const lng = coords[0];
+  const lat = coords[1];
+  if (!isInsideRomaniaEnvelope(lat, lng)) return null;
+  const country = (props.country ?? "").toLocaleLowerCase("ro");
+  if (country && country !== "românia" && country !== "romania") return null;
+  if (!props.name && !props.city && !props.street && !props.county) return null;
+
+  const kind = photonKind(props.osm_key, props.osm_value);
+  const name = props.name?.trim() ?? "";
+  const parentCity = (props.city || props.district || "").trim();
+  const city = kind === "locality" ? name || parentCity : parentCity || name;
+  const county = matchCounty(props.county ?? props.state, city || name);
+  const streetName = props.street || (kind === "street" ? name : "");
+  const street = streetName
+    ? `${streetName}${props.housenumber ? ` ${props.housenumber}` : ""}`
+    : "";
+  const label = [street || props.name, city, county].filter(Boolean).join(", ");
+
+  return {
+    lat,
+    lng,
+    zoom: kind === "street" ? 18 : kind === "county" ? 9 : city && kind === "locality" ? 14 : 16,
+    address: street || label,
+    city: city || (kind === "locality" ? props.name ?? "" : ""),
+    county,
+    label,
+    kind: street ? "street" : kind,
+  };
+}
+
+export async function suggestPlaces(query: string): Promise<Place[]> {
+  const key = `sug:${query.trim().toLocaleLowerCase("ro")}`;
+  const cached = searchCache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.places;
+
+  const url = new URL("https://photon.komoot.io/api/");
+  url.searchParams.set("q", query);
+  url.searchParams.set("limit", "8");
+  url.searchParams.set("lang", "default");
+  url.searchParams.set("bbox", "20.26,43.62,30.05,48.27");
+
+  const data = (await nominatim(url)) as { features?: PhotonFeature[] };
+  const seen = new Set<string>();
+  const places: Place[] = [];
+  for (const feature of data.features ?? []) {
+    const place = photonToPlace(feature);
+    if (!place) continue;
+    const dedupe = `${place.kind}|${place.city}|${place.county}|${place.lat.toFixed(3)}|${place.lng.toFixed(3)}`;
+    if (seen.has(dedupe)) continue;
+    seen.add(dedupe);
+    places.push(place);
+  }
+
+  searchCache.set(key, { expires: Date.now() + SEARCH_CACHE_MS, places });
+  return places;
+}
+
+export async function fetchPlaces(query: string, signal?: AbortSignal): Promise<Place[]> {
+  const response = await fetch(`/api/geocode/suggest?q=${encodeURIComponent(query)}`, { signal });
+  if (!response.ok) return [];
+  const data = (await response.json()) as { places?: Place[] };
+  return data.places ?? [];
 }
 
 export async function fetchPlace(query: string): Promise<Place | null> {

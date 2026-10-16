@@ -81,12 +81,19 @@ export function isInsideRomaniaEnvelope(lat: number, lng: number) {
   return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
 }
 
+function foldPlace(value: string) {
+  return value
+    .trim()
+    .toLocaleLowerCase("ro")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 export function findCity(query: string) {
-  const q = query.trim().toLocaleLowerCase("ro");
+  const q = foldPlace(query);
   if (!q) return undefined;
-  return cities.find(
-    (city) =>
-      city.name.toLocaleLowerCase("ro") === q ||
-      city.name.toLocaleLowerCase("ro").includes(q),
-  );
+  return cities.find((city) => {
+    const name = foldPlace(city.name);
+    return name === q || name.includes(q);
+  });
 }

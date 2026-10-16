@@ -116,6 +116,67 @@ a {
   height: 32px;
 }
 
+.search-wrap {
+  position: relative;
+  z-index: 6;
+}
+
+.suggest {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 7;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: min(360px, 62dvh);
+  overflow: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.suggest button {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  padding: 9px 10px;
+  cursor: pointer;
+}
+
+.suggest button.is-active,
+.suggest button[aria-selected="true"] {
+  background: #efe8d8;
+}
+
+.suggest strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.suggest em {
+  display: block;
+  font-style: normal;
+  color: #6a756e;
+  font-size: 12px;
+}
+
+.suggest b {
+  font-size: 11px;
+  font-weight: 400;
+  color: #6a756e;
+  white-space: nowrap;
+}
+
 .search input {
   flex: 1;
   min-width: 0;
@@ -124,10 +185,15 @@ a {
   background: transparent;
 }
 
-.search button {
+.search > button {
   border: 0;
   background: transparent;
   padding: 4px;
+}
+
+.topbar-actions .search-wrap {
+  width: min(320px, 46vw);
+  max-width: 320px;
 }
 
 .topbar-actions {
@@ -753,6 +819,12 @@ h2 {
   .search {
     max-width: none;
     height: 40px;
+  }
+
+  .suggest button {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .icon-btn {

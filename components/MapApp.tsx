@@ -2,10 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Accessibility, Crosshair, List, Search, X } from "lucide-react";
+import { Accessibility, Crosshair, List, X } from "lucide-react";
 import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
 import { findCity, isInsideRomaniaEnvelope, type MapStyleId } from "@/lib/romania";
+import type { SearchSuggestion } from "@/lib/suggest";
 import {
   groupToiletsByLocality,
   matchesToilet,
@@ -14,6 +15,7 @@ import {
   toiletCostLabel,
 } from "@/lib/toilets";
 import type { Toilet } from "@/lib/types";
+import SearchBox from "@/components/SearchBox";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -67,8 +69,8 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
     );
   }
 
-  async function goToQuery() {
-    const needle = query.trim();
+  async function goToQuery(nextQuery = query) {
+    const needle = nextQuery.trim();
     if (!needle) return;
 
     const q = normalizeQuery(needle);
@@ -112,6 +114,24 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
     setListOpen(true);
   }
 
+  function applySuggestion(suggestion: SearchSuggestion) {
+    setQuery(suggestion.query);
+    if (suggestion.toiletId) {
+      selectToilet(suggestion.toiletId);
+      return;
+    }
+    if (suggestion.lat != null && suggestion.lng != null) {
+      setSelectedId(null);
+      setFlyTo({
+        lat: suggestion.lat,
+        lng: suggestion.lng,
+        zoom: suggestion.zoom ?? 14,
+      });
+      return;
+    }
+    void goToQuery(suggestion.query);
+  }
+
   function selectLocality(lat: number, lng: number) {
     setSelectedId(null);
     setFlyTo({ lat, lng, zoom: 14 });
@@ -123,26 +143,15 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
   return (
     <div className="app-shell">
       <header className="topbar">
-        <form
-          className="search"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void goToQuery();
-          }}
-        >
-          <Search size={15} strokeWidth={2.2} />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Stradă, comună, județ"
-            aria-label="Caută stradă, comună sau județ"
-          />
-          {query ? (
-            <button type="button" onClick={() => setQuery("")} aria-label="Șterge căutarea">
-              <X size={14} />
-            </button>
-          ) : null}
-        </form>
+        <SearchBox
+          value={query}
+          toilets={toilets}
+          placeholder="Stradă, comună, județ"
+          ariaLabel="Caută stradă, comună sau județ"
+          onChange={setQuery}
+          onSubmit={() => void goToQuery()}
+          onPick={applySuggestion}
+        />
         <div className="topbar-actions">
           <button type="button" className="icon-btn" onClick={locateMe} title="Lângă mine">
             <Crosshair size={16} />

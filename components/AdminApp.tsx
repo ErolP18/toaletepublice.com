@@ -6,7 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
 import { findCity, type MapStyleId } from "@/lib/romania";
+import type { SearchSuggestion } from "@/lib/suggest";
 import type { Toilet, ToiletDraft, ToiletStatus, ToiletType } from "@/lib/types";
+import SearchBox from "@/components/SearchBox";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
   ssr: false,
@@ -99,8 +101,8 @@ export default function AdminApp() {
     );
   }
 
-  async function goToQuery() {
-    const needle = placeQuery.trim() || query.trim();
+  async function goToQuery(nextQuery = placeQuery) {
+    const needle = nextQuery.trim() || query.trim();
     if (!needle) return;
     const place = await fetchPlace(needle);
     if (place) {
@@ -110,6 +112,20 @@ export default function AdminApp() {
     }
     const city = findCity(needle);
     if (city) setFlyTo({ lat: city.lat, lng: city.lng, zoom: city.zoom });
+  }
+
+  function applyPlaceSuggestion(suggestion: SearchSuggestion) {
+    setPlaceQuery(suggestion.query);
+    if (suggestion.lat != null && suggestion.lng != null) {
+      setFlyTo({
+        lat: suggestion.lat,
+        lng: suggestion.lng,
+        zoom: suggestion.zoom ?? 14,
+      });
+      if (addMode) void placeDraft(suggestion.lat, suggestion.lng);
+      return;
+    }
+    void goToQuery(suggestion.query);
   }
 
   function startAdd() {
@@ -252,20 +268,15 @@ export default function AdminApp() {
           <span className="admin-flag">Admin</span>
         </nav>
         <div className="topbar-actions">
-          <form
-            className="search"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void goToQuery();
-            }}
-          >
-            <input
-              value={placeQuery}
-              onChange={(event) => setPlaceQuery(event.target.value)}
-              placeholder="Comună, stradă"
-              aria-label="Caută comună sau stradă"
-            />
-          </form>
+          <SearchBox
+            value={placeQuery}
+            toilets={toilets}
+            placeholder="Comună, stradă"
+            ariaLabel="Caută comună sau stradă"
+            onChange={setPlaceQuery}
+            onSubmit={() => void goToQuery()}
+            onPick={applyPlaceSuggestion}
+          />
           <button type="button" className="ghost" onClick={startAdd} disabled={addMode}>
             Adaugă
           </button>
