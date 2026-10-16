@@ -208,6 +208,11 @@ a {
   color: #5c6b67;
 }
 
+.ghost[aria-pressed="true"] {
+  border-color: var(--pine);
+  color: var(--pine);
+}
+
 .ghost,
 .primary,
 .danger,
@@ -569,6 +574,7 @@ h2 {
 .checks,
 .form-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -610,6 +616,12 @@ h2 {
 
 .status[data-status="confirmat"] {
   background: #d5ead8;
+}
+
+.admin-table .status {
+  align-self: auto;
+  display: inline-block;
+  margin: 0;
 }
 
 .back {
@@ -779,13 +791,41 @@ h2 {
   cursor: pointer;
 }
 
+.admin-table tbody tr:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: -2px;
+}
+
 .admin-table tr.is-active td {
   color: var(--pine);
 }
 
+.login-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 20px 48px;
+  background: var(--paper);
+}
+
+.login-back {
+  margin: 0 0 18px;
+}
+
+.login-back a {
+  color: var(--teal);
+  text-decoration: none;
+  font-size: 14px;
+}
+
 .login-body {
-  max-width: 360px;
-  padding-top: 80px;
+  width: min(360px, 100%);
+}
+
+.login-body h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 8px;
 }
 
 .login-form {
@@ -809,6 +849,22 @@ h2 {
 }
 
 @media (max-width: 900px) {
+  .topbar:has(.admin-flag) {
+    flex-wrap: wrap;
+    align-items: flex-end;
+    row-gap: 8px;
+  }
+
+  .topbar:has(.admin-flag) .topbar-actions {
+    width: 100%;
+  }
+
+  .topbar:has(.admin-flag) .topbar-actions .search-wrap {
+    flex: 1;
+    width: auto;
+    max-width: none;
+  }
+
   .topbar,
   .about-top {
     min-height: 56px;

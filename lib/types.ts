@@ -45,5 +45,6 @@ export type ToiletDraft = {
   accessible: boolean;
   free: boolean;
   type: ToiletType;
+  status: ToiletStatus;
   notes: string;
 };

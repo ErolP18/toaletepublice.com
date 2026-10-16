@@ -7,6 +7,7 @@ import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
 import { findCity, type MapStyleId } from "@/lib/romania";
 import type { SearchSuggestion } from "@/lib/suggest";
+import { matchesToilet, sortToilets } from "@/lib/toilets";
 import type { Toilet, ToiletDraft, ToiletStatus, ToiletType } from "@/lib/types";
 import SearchBox from "@/components/SearchBox";
 
@@ -27,6 +28,7 @@ const emptyDraft = (lat: number, lng: number): ToiletDraft => ({
   accessible: false,
   free: true,
   type: "strada",
+  status: "confirmat",
   notes: "",
 });
 
@@ -41,7 +43,9 @@ export default function AdminApp() {
   const [edit, setEdit] = useState<Toilet | null>(null);
   const [geocoding, setGeocoding] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [styleId] = useState<MapStyleId>("liberty");
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(
@@ -52,24 +56,55 @@ export default function AdminApp() {
     const response = await fetch("/api/admin/toilets");
     if (!response.ok) throw new Error("Nu am putut citi toaletele.");
     const data = (await response.json()) as Toilet[];
-    setToilets(data);
+    setToilets(sortToilets(data));
   }
 
   useEffect(() => {
-    load().catch((err: Error) => setError(err.message));
+    load()
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(""), 4000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key !== "Escape" || busy) return;
+      if (addMode) {
+        setAddMode(false);
+        setDraft(null);
+        setPhotoFile(null);
+        return;
+      }
+      if (selectedId) {
+        setEdit(null);
+        setSelectedId(null);
+        setPhotoFile(null);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [addMode, selectedId, busy]);
+
   const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("ro");
     return toilets.filter((toilet) => {
       if (status && toilet.status !== status) return false;
-      if (!needle) return true;
-      return [toilet.name, toilet.city, toilet.county, toilet.address ?? "", toilet.hours ?? ""]
-        .join(" ")
-        .toLocaleLowerCase("ro")
-        .includes(needle);
+      return matchesToilet(toilet, query);
     });
   }, [toilets, query, status]);
+
+  const mapToilets = useMemo(() => {
+    if (!edit) return filtered;
+    return filtered.map((toilet) =>
+      toilet.id === edit.id ? { ...toilet, lat: edit.lat, lng: edit.lng } : toilet,
+    );
+  }, [filtered, edit]);
+
+  const hiddenCount = toilets.filter((toilet) => toilet.status === "propunere").length;
 
   async function reverseGeocode(lat: number, lng: number) {
     setGeocoding(true);
@@ -86,13 +121,32 @@ export default function AdminApp() {
     }
   }
 
+  function applyPlace(
+    current: { address: string; city: string; county: string },
+    data: { address?: string; city?: string; county?: string },
+  ) {
+    return {
+      address: current.address || data.address || "",
+      city: current.city || data.city || "",
+      county: current.county || data.county || "",
+    };
+  }
+
   async function placeDraft(lat: number, lng: number) {
     setDraft((current) => ({ ...(current ?? emptyDraft(lat, lng)), lat, lng }));
     const data = await reverseGeocode(lat, lng);
-    setDraft((current) =>
+    setDraft((current) => (current ? { ...current, ...applyPlace(current, data) } : current));
+  }
+
+  async function moveEdit(lat: number, lng: number) {
+    setEdit((current) => (current ? { ...current, lat, lng } : current));
+    const data = await reverseGeocode(lat, lng);
+    setEdit((current) =>
       current
         ? {
             ...current,
+            lat,
+            lng,
             address: current.address || data.address || "",
             city: current.city || data.city || "",
             county: current.county || data.county || "",
@@ -135,6 +189,7 @@ export default function AdminApp() {
     setDraft(null);
     setPhotoFile(null);
     setError("");
+    setNotice("");
   }
 
   function cancelAdd() {
@@ -150,6 +205,7 @@ export default function AdminApp() {
     setDraft(null);
     setEdit(toilet ? { ...toilet } : null);
     setPhotoFile(null);
+    setNotice("");
     if (toilet) setFlyTo({ lat: toilet.lat, lng: toilet.lng, zoom: 16 });
   }
 
@@ -191,7 +247,7 @@ export default function AdminApp() {
       const response = await fetch("/api/admin/toilets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...draft, status: "propunere", source: "admin" }),
+        body: JSON.stringify({ ...draft, source: "admin" }),
       });
       const data = (await response.json()) as Toilet & { error?: string };
       if (!response.ok) throw new Error(data.error || "Nu am putut salva.");
@@ -202,6 +258,11 @@ export default function AdminApp() {
       setPhotoFile(null);
       setSelectedId(saved.id);
       setEdit(saved);
+      setNotice(
+        saved.status === "propunere"
+          ? "Salvat ca propunere. Nu apare pe harta publică."
+          : "Salvat. Apare pe harta publică.",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nu am putut salva.");
     } finally {
@@ -225,6 +286,7 @@ export default function AdminApp() {
       await load();
       setPhotoFile(null);
       setEdit(saved);
+      setNotice("Modificările sunt salvate.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nu am putut salva.");
     } finally {
@@ -277,7 +339,7 @@ export default function AdminApp() {
             onSubmit={() => void goToQuery()}
             onPick={applyPlaceSuggestion}
           />
-          <button type="button" className="ghost" onClick={startAdd} disabled={addMode}>
+          <button type="button" className="ghost" onClick={startAdd} aria-pressed={addMode}>
             Adaugă
           </button>
           <button type="button" className="ghost" onClick={() => void logout()}>
@@ -288,8 +350,28 @@ export default function AdminApp() {
 
       {addMode ? (
         <p className="banner">Caută strada sau apasă pe hartă, oriunde în țară.</p>
+      ) : edit ? (
+        <p className="banner">Apasă pe hartă ca să muți pinul.</p>
       ) : null}
-      {error ? <p className="banner warn">{error}</p> : null}
+      {notice ? <p className="banner">{notice}</p> : null}
+      {error ? (
+        <p className="banner warn">
+          {error}{" "}
+          <button
+            type="button"
+            className="back"
+            onClick={() => {
+              setError("");
+              setLoading(true);
+              load()
+                .catch((err: Error) => setError(err.message))
+                .finally(() => setLoading(false));
+            }}
+          >
+            Reîncearcă
+          </button>
+        </p>
+      ) : null}
 
       <div className="workspace admin-workspace">
         <aside className="panel admin-panel">
@@ -310,7 +392,10 @@ export default function AdminApp() {
             </select>
           </div>
           <p className="stats-line">
-            {filtered.length} {filtered.length === 1 ? "toaletă" : "toalete"}
+            {loading
+              ? "Se încarcă…"
+              : `${filtered.length} ${filtered.length === 1 ? "toaletă" : "toalete"}`}
+            {!loading && hiddenCount > 0 ? ` · ${hiddenCount} doar în admin` : ""}
           </p>
 
           {addMode ? (
@@ -327,6 +412,7 @@ export default function AdminApp() {
           ) : edit ? (
             <EditForm
               toilet={edit}
+              geocoding={geocoding}
               busy={busy}
               photoFile={photoFile}
               onPhoto={setPhotoFile}
@@ -340,6 +426,18 @@ export default function AdminApp() {
               onDelete={() => void removeToilet(edit.id)}
               onRemovePhoto={() => void removePhoto(edit.id)}
             />
+          ) : loading ? (
+            <p className="add-empty">Se încarcă lista…</p>
+          ) : filtered.length === 0 ? (
+            <div className="add-empty">
+              <p>
+                {error
+                  ? "Lista nu s-a putut încărca."
+                  : toilets.length === 0
+                    ? "Nicio toaletă în bază. Adaugă prima de pe hartă."
+                    : "Nimic nu se potrivește cu filtrul."}
+              </p>
+            </div>
           ) : (
             <table className="admin-table">
               <thead>
@@ -354,11 +452,25 @@ export default function AdminApp() {
                   <tr
                     key={toilet.id}
                     className={selectedId === toilet.id ? "is-active" : undefined}
+                    tabIndex={0}
                     onClick={() => selectToilet(toilet.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        selectToilet(toilet.id);
+                      }
+                    }}
                   >
                     <td>{toilet.name}</td>
-                    <td>{toilet.city}</td>
-                    <td>{toiletStatusLabels[toilet.status]}</td>
+                    <td>
+                      {toilet.city}
+                      {toilet.county && toilet.county !== toilet.city ? `, ${toilet.county}` : ""}
+                    </td>
+                    <td>
+                      <span className="status" data-status={toilet.status}>
+                        {toiletStatusLabels[toilet.status]}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -368,15 +480,16 @@ export default function AdminApp() {
 
         <section className="map-wrap">
           <MapView
-            toilets={filtered}
+            toilets={mapToilets}
             selectedId={selectedId}
-            addMode={addMode}
+            addMode={addMode || Boolean(edit)}
             draftPoint={draft ? { lat: draft.lat, lng: draft.lng } : null}
             styleId={styleId}
             flyTo={flyTo}
             onSelect={selectToilet}
             onMapClick={(lat, lng) => {
               if (addMode) void placeDraft(lat, lng);
+              else if (edit) void moveEdit(lat, lng);
             }}
             onFlyComplete={() => setFlyTo(null)}
           />
@@ -437,6 +550,7 @@ function AdminForm({
         city={draft.city}
         county={draft.county}
         type={draft.type}
+        status={draft.status}
         hours={draft.hours}
         price={draft.price}
         accessible={draft.accessible}
@@ -445,10 +559,11 @@ function AdminForm({
         photoFile={photoFile}
         onPhoto={onPhoto}
         onChange={update}
+        focusName
       />
       <div className="form-actions">
         <button type="submit" className="primary" disabled={!ready || busy}>
-          Salvează
+          {busy ? "Salvez…" : "Salvează"}
         </button>
         <button type="button" className="ghost" onClick={onCancel}>
           Anulează
@@ -460,6 +575,7 @@ function AdminForm({
 
 function EditForm({
   toilet,
+  geocoding,
   busy,
   photoFile,
   onPhoto,
@@ -470,6 +586,7 @@ function EditForm({
   onRemovePhoto,
 }: {
   toilet: Toilet;
+  geocoding: boolean;
   busy: boolean;
   photoFile: File | null;
   onPhoto: (file: File | null) => void;
@@ -494,6 +611,7 @@ function EditForm({
       </button>
       <p className="coords">
         {toilet.lat.toFixed(6)}, {toilet.lng.toFixed(6)}
+        {geocoding ? " · citesc adresa…" : ""}
       </p>
       <Fields
         name={toilet.name}
@@ -501,6 +619,7 @@ function EditForm({
         city={toilet.city}
         county={toilet.county}
         type={toilet.type}
+        status={toilet.status}
         hours={toilet.hours ?? ""}
         price={toilet.price ?? ""}
         accessible={toilet.accessible}
@@ -513,19 +632,6 @@ function EditForm({
         onChange={update}
       />
       <label>
-        Status
-        <select
-          value={toilet.status}
-          onChange={(event) => update({ status: event.target.value as ToiletStatus })}
-        >
-          {Object.entries(toiletStatusLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
         Sursă
         <input
           value={toilet.source ?? ""}
@@ -534,7 +640,7 @@ function EditForm({
       </label>
       <div className="form-actions">
         <button type="submit" className="primary" disabled={busy}>
-          Salvează
+          {busy ? "Salvez…" : "Salvează"}
         </button>
         <button type="button" className="danger" onClick={onDelete} disabled={busy}>
           Șterge
@@ -550,6 +656,7 @@ function Fields({
   city,
   county,
   type,
+  status,
   hours,
   price,
   accessible,
@@ -560,12 +667,14 @@ function Fields({
   onPhoto,
   onRemovePhoto,
   onChange,
+  focusName,
 }: {
   name: string;
   address: string;
   city: string;
   county: string;
   type: ToiletType;
+  status?: ToiletStatus;
   hours: string;
   price: string;
   accessible: boolean;
@@ -576,12 +685,18 @@ function Fields({
   onPhoto?: (file: File | null) => void;
   onRemovePhoto?: () => void;
   onChange: (patch: Partial<ToiletDraft>) => void;
+  focusName?: boolean;
 }) {
   return (
     <>
       <label>
         Nume
-        <input required value={name} onChange={(event) => onChange({ name: event.target.value })} />
+        <input
+          required
+          autoFocus={focusName}
+          value={name}
+          onChange={(event) => onChange({ name: event.target.value })}
+        />
       </label>
       <label>
         Stradă / adresă
@@ -613,19 +728,39 @@ function Fields({
           </select>
         </label>
       </div>
-      <label>
-        Tip
-        <select
-          value={type}
-          onChange={(event) => onChange({ type: event.target.value as ToiletType })}
-        >
-          {Object.entries(toiletTypeLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="row">
+        <label>
+          Tip
+          <select
+            value={type}
+            onChange={(event) => onChange({ type: event.target.value as ToiletType })}
+          >
+            {Object.entries(toiletTypeLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        {status ? (
+          <label>
+            Status
+            <select
+              value={status}
+              onChange={(event) => onChange({ status: event.target.value as ToiletStatus })}
+            >
+              {Object.entries(toiletStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+      </div>
+      {status === "propunere" ? (
+        <p className="hint">Propunerile rămân doar în admin, nu apar pe harta publică.</p>
+      ) : null}
       <label>
         Regim de funcționare
         <textarea

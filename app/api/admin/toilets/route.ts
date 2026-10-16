@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   if (!(counties as readonly string[]).includes(county)) {
     return NextResponse.json({ error: "Județ necunoscut." }, { status: 400 });
   }
-  if (!isToiletType(body.type) || !isToiletStatus(body.status ?? "propunere")) {
+  if (!isToiletType(body.type) || !isToiletStatus(body.status ?? "confirmat")) {
     return NextResponse.json({ error: "Tip sau status invalid." }, { status: 400 });
   }
 
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     accessible: Boolean(body.accessible),
     free: body.free !== false,
     type: body.type,
-    status: (body.status as string) || "propunere",
+    status: (body.status as string) || "confirmat",
     notes: readString(body.notes) || null,
     source: readString(body.source) || "admin",
     createdAt: now,
