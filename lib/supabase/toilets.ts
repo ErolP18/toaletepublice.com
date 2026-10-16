@@ -101,7 +101,7 @@ export async function supabaseListPublic() {
     .order("city")
     .order("name");
   throwIfError(error);
-  return (data as ToiletRow[]).map(rowToToilet);
+  return ((data ?? []) as ToiletRow[]).map(rowToToilet);
 }
 
 export async function supabaseListAll() {
@@ -113,7 +113,7 @@ export async function supabaseListAll() {
     .order("city")
     .order("name");
   throwIfError(error);
-  return (data as ToiletRow[]).map(rowToToilet);
+  return ((data ?? []) as ToiletRow[]).map(rowToToilet);
 }
 
 export async function supabaseGet(id: string) {

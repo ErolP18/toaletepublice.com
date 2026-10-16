@@ -112,7 +112,13 @@ async function nominatim(url: URL) {
   if (!response.ok) {
     throw new Error("OpenStreetMap nu a răspuns.");
   }
-  return response.json();
+  const text = await response.text();
+  if (!text) throw new Error("OpenStreetMap nu a răspuns.");
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("OpenStreetMap nu a răspuns.");
+  }
 }
 
 function toPlace(

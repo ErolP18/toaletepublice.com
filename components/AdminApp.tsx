@@ -16,6 +16,27 @@ const MapView = dynamic(() => import("@/components/MapView"), {
   loading: () => <div className="map-canvas map-skeleton" />,
 });
 
+async function readApi<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  let data: unknown = null;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Răspuns invalid de la server.");
+    }
+  }
+  if (!response.ok) {
+    const message =
+      data && typeof data === "object" && "error" in data && typeof (data as { error?: string }).error === "string"
+        ? (data as { error: string }).error
+        : "Nu am putut vorbi cu serverul.";
+    throw new Error(message);
+  }
+  if (data == null) throw new Error("Răspuns gol de la server.");
+  return data as T;
+}
+
 const emptyDraft = (lat: number, lng: number): ToiletDraft => ({
   lat,
   lng,
@@ -39,7 +60,6 @@ export default function AdminApp() {
   const [status, setStatus] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addMode, setAddMode] = useState(false);
-  const [listOpen, setListOpen] = useState(false);
   const [draft, setDraft] = useState<ToiletDraft | null>(null);
   const [edit, setEdit] = useState<Toilet | null>(null);
   const [geocoding, setGeocoding] = useState(false);
@@ -54,10 +74,8 @@ export default function AdminApp() {
   );
 
   async function load() {
-    const response = await fetch("/api/admin/toilets");
-    if (!response.ok) throw new Error("Nu am putut citi toaletele.");
-    const data = (await response.json()) as Toilet[];
-    setToilets(sortToilets(data));
+    const data = await readApi<Toilet[]>(await fetch("/api/admin/toilets"));
+    setToilets(sortToilets(Array.isArray(data) ? data : []));
   }
 
   useEffect(() => {
@@ -79,23 +97,18 @@ export default function AdminApp() {
         setAddMode(false);
         setDraft(null);
         setPhotoFile(null);
-        setListOpen(true);
         return;
       }
       if (selectedId) {
         setEdit(null);
         setSelectedId(null);
         setPhotoFile(null);
-        setListOpen(true);
-        return;
       }
-      setListOpen(false);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [addMode, selectedId, busy]);
 
-  const panelOpen = addMode || Boolean(edit) || listOpen;
   const browsingList = !addMode && !edit;
 
   const filtered = useMemo(() => {
@@ -119,11 +132,13 @@ export default function AdminApp() {
     try {
       const response = await fetch(`/api/geocode/reverse?lat=${lat}&lng=${lng}`);
       if (!response.ok) return {};
-      return (await response.json()) as {
+      return await readApi<{
         address?: string;
         city?: string;
         county?: string;
-      };
+      }>(response);
+    } catch {
+      return {};
     } finally {
       setGeocoding(false);
     }
@@ -192,12 +207,10 @@ export default function AdminApp() {
 
   function startAdd() {
     setAddMode(true);
-    setListOpen(true);
     setSelectedId(null);
     setEdit(null);
     setDraft(null);
     setPhotoFile(null);
-    setError("");
     setNotice("");
   }
 
@@ -205,23 +218,12 @@ export default function AdminApp() {
     setAddMode(false);
     setDraft(null);
     setPhotoFile(null);
-    setListOpen(true);
-  }
-
-  function closePanel() {
-    setAddMode(false);
-    setDraft(null);
-    setEdit(null);
-    setSelectedId(null);
-    setPhotoFile(null);
-    setListOpen(false);
   }
 
   function selectToilet(id: string) {
     const toilet = toilets.find((item) => item.id === id);
     setSelectedId(id);
     setAddMode(false);
-    setListOpen(true);
     setDraft(null);
     setEdit(toilet ? { ...toilet } : null);
     setPhotoFile(null);
@@ -236,9 +238,7 @@ export default function AdminApp() {
       method: "POST",
       body,
     });
-    const data = (await response.json()) as Toilet & { error?: string };
-    if (!response.ok) throw new Error(data.error || "Nu am putut salva poza.");
-    return data;
+    return await readApi<Toilet>(response);
   }
 
   async function removePhoto(id: string) {
@@ -246,9 +246,9 @@ export default function AdminApp() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/toilets/${id}/photo`, { method: "DELETE" });
-      const data = (await response.json()) as Toilet & { error?: string };
-      if (!response.ok) throw new Error(data.error || "Nu am putut scoate poza.");
+      const data = await readApi<Toilet>(
+        await fetch(`/api/admin/toilets/${id}/photo`, { method: "DELETE" }),
+      );
       await load();
       setPhotoFile(null);
       setEdit(data);
@@ -264,13 +264,13 @@ export default function AdminApp() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/admin/toilets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...draft, source: "admin" }),
-      });
-      const data = (await response.json()) as Toilet & { error?: string };
-      if (!response.ok) throw new Error(data.error || "Nu am putut salva.");
+      const data = await readApi<Toilet>(
+        await fetch("/api/admin/toilets", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...draft, source: "admin" }),
+        }),
+      );
       const saved = photoFile ? await uploadPhoto(data.id, photoFile) : data;
       await load();
       setAddMode(false);
@@ -295,13 +295,13 @@ export default function AdminApp() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/toilets/${edit.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(edit),
-      });
-      const data = (await response.json()) as Toilet & { error?: string };
-      if (!response.ok) throw new Error(data.error || "Nu am putut salva.");
+      const data = await readApi<Toilet>(
+        await fetch(`/api/admin/toilets/${edit.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(edit),
+        }),
+      );
       const saved = photoFile ? await uploadPhoto(edit.id, photoFile) : data;
       await load();
       setPhotoFile(null);
@@ -319,11 +319,9 @@ export default function AdminApp() {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/toilets/${id}`, { method: "DELETE" });
-      if (!response.ok) {
-        const data = (await response.json()) as { error?: string };
-        throw new Error(data.error || "Nu am putut șterge.");
-      }
+      await readApi<{ ok: boolean }>(
+        await fetch(`/api/admin/toilets/${id}`, { method: "DELETE" }),
+      );
       await load();
       if (selectedId === id) {
         setSelectedId(null);
@@ -362,29 +360,12 @@ export default function AdminApp() {
           <button type="button" className="ghost" onClick={startAdd} aria-pressed={addMode}>
             Adaugă
           </button>
-          <button
-            type="button"
-            className={`ghost list-toggle${listOpen && browsingList ? " is-on" : ""}`}
-            onClick={() => {
-              if (addMode || edit) closePanel();
-              else setListOpen((open) => !open);
-            }}
-            aria-expanded={panelOpen}
-            aria-label={panelOpen ? "Închide lista" : "Deschide lista"}
-          >
-            Listă
-          </button>
           <button type="button" className="ghost" onClick={() => void logout()}>
             Ieșire
           </button>
         </div>
       </header>
 
-      {addMode ? (
-        <p className="banner">Caută strada sau apasă pe hartă, oriunde în țară.</p>
-      ) : edit ? (
-        <p className="banner">Apasă pe hartă ca să muți pinul.</p>
-      ) : null}
       {notice ? <p className="banner">{notice}</p> : null}
       {error ? (
         <p className="banner warn">
@@ -405,16 +386,8 @@ export default function AdminApp() {
         </p>
       ) : null}
 
-      <div className={`workspace admin-workspace${panelOpen ? " is-list-open" : ""}`}>
-        {listOpen && browsingList ? (
-          <button
-            type="button"
-            className="panel-scrim"
-            onClick={() => setListOpen(false)}
-            aria-label="Închide lista"
-          />
-        ) : null}
-        <aside className={`panel admin-panel${panelOpen ? " is-open" : ""}`}>
+      <div className="workspace admin-workspace">
+        <aside className="admin-sidebar">
           {browsingList ? (
             <div className="admin-tools">
               <input
@@ -464,7 +437,6 @@ export default function AdminApp() {
                 setEdit(null);
                 setSelectedId(null);
                 setPhotoFile(null);
-                setListOpen(true);
               }}
               onDelete={() => void removeToilet(edit.id)}
               onRemovePhoto={() => void removePhoto(edit.id)}
@@ -475,7 +447,7 @@ export default function AdminApp() {
             <div className="add-empty">
               <p>
                 {error
-                  ? "Lista nu s-a putut încărca."
+                  ? error
                   : toilets.length === 0
                     ? "Nicio toaletă în bază. Adaugă prima de pe hartă."
                     : "Nimic nu se potrivește cu filtrul."}
@@ -564,7 +536,7 @@ function AdminForm({
   if (!draft) {
     return (
       <div className="add-empty">
-        <p>Caută o stradă sus, sau click pe hartă.</p>
+        <p>Caută o stradă sus sau apasă pe hartă.</p>
         <button type="button" className="ghost" onClick={onCancel}>
           Anulează
         </button>

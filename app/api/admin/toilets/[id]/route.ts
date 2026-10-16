@@ -12,6 +12,7 @@ function readString(value: unknown) {
 }
 
 export async function PATCH(request: Request, context: Ctx) {
+  try {
   const { id } = await context.params;
   const existing = await getToilet(id);
   if (!existing) return NextResponse.json({ error: "Nu există." }, { status: 404 });
@@ -69,12 +70,21 @@ export async function PATCH(request: Request, context: Ctx) {
   }
 
   return NextResponse.json(await updateToilet(id, patch));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut salva.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }
 
 export async function DELETE(_request: Request, context: Ctx) {
+  try {
   const { id } = await context.params;
   const removed = await deleteToilet(id);
   if (!removed) return NextResponse.json({ error: "Nu există." }, { status: 404 });
   await deleteToiletPhoto(removed.photo);
   return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut șterge.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }

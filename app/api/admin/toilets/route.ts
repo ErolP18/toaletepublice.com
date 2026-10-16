@@ -8,7 +8,12 @@ function readString(value: unknown) {
 }
 
 export async function GET() {
-  return NextResponse.json(await listAllToilets());
+  try {
+    return NextResponse.json(await listAllToilets());
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut citi toaletele.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -34,6 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Tip sau status invalid." }, { status: 400 });
   }
 
+  try {
   const now = new Date();
   const toilet = await createToilet({
     id: crypto.randomUUID(),
@@ -56,4 +62,8 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(toilet, { status: 201 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut salva.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }

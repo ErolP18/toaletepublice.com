@@ -5,6 +5,7 @@ import { deleteToiletPhoto, saveToiletPhoto } from "@/lib/photo";
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: Ctx) {
+  try {
   const { id } = await context.params;
   const existing = await getToilet(id);
   if (!existing) return NextResponse.json({ error: "Nu există." }, { status: 404 });
@@ -22,12 +23,21 @@ export async function POST(request: Request, context: Ctx) {
     const message = error instanceof Error ? error.message : "Nu am putut salva poza.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut salva poza.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }
 
 export async function DELETE(_request: Request, context: Ctx) {
+  try {
   const { id } = await context.params;
   const existing = await getToilet(id);
   if (!existing) return NextResponse.json({ error: "Nu există." }, { status: 404 });
   await deleteToiletPhoto(existing.photo);
   return NextResponse.json(await updateToilet(id, { photo: null }));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut scoate poza.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }

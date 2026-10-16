@@ -736,11 +736,18 @@ h2 {
 }
 
 .workspace.admin-workspace {
-  grid-template-columns: min(360px, 42vw) 1fr;
+  grid-template-columns: min(340px, 38vw) 1fr;
 }
 
-.workspace.admin-workspace .panel {
+.admin-sidebar {
   display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  padding: 16px 18px 20px;
 }
 
 .admin-topbar {
@@ -761,14 +768,6 @@ h2 {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-}
-
-.admin-topbar .list-toggle {
-  display: none;
-}
-
-.admin-panel {
-  overflow: auto;
 }
 
 .admin-tools {
@@ -890,10 +889,6 @@ h2 {
     grid-area: actions;
   }
 
-  .admin-topbar .list-toggle {
-    display: inline-flex;
-  }
-
   .topbar,
   .about-top {
     min-height: 56px;
@@ -925,10 +920,26 @@ h2 {
   }
 
   .workspace,
-  .workspace.is-list-open,
-  .workspace.admin-workspace,
-  .workspace.admin-workspace.is-list-open {
+  .workspace.is-list-open {
     grid-template-columns: 1fr;
+  }
+
+  .workspace.admin-workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(240px, 42dvh);
+  }
+
+  .admin-workspace .map-wrap {
+    order: 1;
+    min-height: 0;
+  }
+
+  .admin-sidebar {
+    order: 2;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    height: 100%;
+    max-height: none;
   }
 
   .panel-scrim {
@@ -963,27 +974,6 @@ h2 {
 
   .panel.is-open,
   .workspace.is-list-open .panel.is-open {
-    transform: none;
-    pointer-events: auto;
-    visibility: visible;
-  }
-
-  .workspace.admin-workspace .panel {
-    position: absolute;
-    left: max(10px, env(safe-area-inset-left));
-    right: max(10px, env(safe-area-inset-right));
-    bottom: max(10px, env(safe-area-inset-bottom));
-    height: auto;
-    max-height: min(68dvh, 640px);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    transform: translateY(120%);
-    pointer-events: none;
-    visibility: hidden;
-  }
-
-  .workspace.admin-workspace .panel.is-open {
     transform: none;
     pointer-events: auto;
     visibility: visible;
