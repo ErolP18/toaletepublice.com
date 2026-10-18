@@ -33,11 +33,26 @@ type MapViewProps = {
   onFlyComplete: () => void;
 };
 
+function collapseAttribution(map: MapLibreMap) {
+  if (map.getCanvasContainer().offsetWidth > 640) return;
+  const el = map.getContainer().querySelector(".maplibregl-ctrl-attrib");
+  if (!(el instanceof HTMLElement)) return;
+  el.classList.remove("maplibregl-compact-show");
+  el.removeAttribute("open");
+}
+
 function pinElement(kind: "toilet" | "draft" | "active") {
   const el = document.createElement("button");
   el.type = "button";
   el.className = `map-pin map-pin-${kind}`;
-  el.innerHTML = `<span class="map-pin-dot"></span>`;
+  const size = kind === "active" ? 32 : kind === "draft" ? 22 : 28;
+  el.style.width = `${size}px`;
+  el.style.height = `${size}px`;
+  el.innerHTML = `<svg class="map-pin-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10.1" fill="currentColor"/>
+      <circle cx="12" cy="12" r="10.1" fill="none" stroke="#f4efe4" stroke-width="1.7"/>
+      <text x="12" y="15.7" text-anchor="middle" fill="#f4efe4" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="8.6" font-weight="700" letter-spacing="-0.08em">WC</text>
+    </svg>`;
   return el;
 }
 
@@ -86,20 +101,16 @@ export default function MapView({
       new NavigationControl({ visualizePitch: false, showCompass: false }),
       "bottom-right",
     );
-    map.addControl(new ScaleControl({ maxWidth: 120, unit: "metric" }), "bottom-left");
-    map.addControl(
-      new AttributionControl({
-        compact: true,
-        customAttribution:
-          '<a href="https://openfreemap.org" target="_blank" rel="noreferrer">OpenFreeMap</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap</a>',
-      }),
-      "bottom-right",
-    );
+    map.addControl(new ScaleControl({ maxWidth: 100, unit: "metric" }), "bottom-left");
+    map.addControl(new AttributionControl({ compact: undefined }), "bottom-left");
+    collapseAttribution(map);
 
     map.on("style.load", () => {
       applyRomaniaMask(map);
+      requestAnimationFrame(() => collapseAttribution(map));
     });
     map.once("load", () => {
+      collapseAttribution(map);
       map.fitBounds(ROMANIA_BOUNDS, {
         padding: { top: 36, bottom: 40, left: 28, right: 28 },
         duration: 0,

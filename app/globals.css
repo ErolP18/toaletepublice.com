@@ -553,6 +553,8 @@ h2 {
   color: #5c6b67;
   padding: 24px 8px;
   text-align: center;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .add-empty {
@@ -664,35 +666,33 @@ h2 {
 }
 
 .map-pin {
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--pine);
   cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(23, 33, 31, 0.4));
 }
 
 .map-pin-active {
   color: var(--pin);
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
 }
 
 .map-pin-draft {
-  width: 14px;
-  height: 14px;
+  width: 22px;
+  height: 22px;
   color: var(--pin);
 }
 
-.map-pin-dot {
+.map-pin-mark {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: 99px;
-  background: currentColor;
-  border: 2px solid #f4efe4;
-  box-shadow: 0 1px 4px rgba(23, 33, 31, 0.35);
+  overflow: visible;
 }
 
 .about-body {
@@ -726,8 +726,32 @@ h2 {
   padding: 10px 16px;
 }
 
+.maplibregl-ctrl-bottom-left,
+.maplibregl-ctrl-bottom-right {
+  z-index: 2;
+  max-width: calc(100% - 48px);
+}
+
 .maplibregl-ctrl-attrib {
   font-size: 10px !important;
+  line-height: 1.35;
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-compact-show) {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-attrib.maplibregl-compact-show {
+  width: auto;
+  max-width: min(240px, calc(100% - 12px));
+}
+
+.maplibregl-ctrl-attrib-inner {
+  white-space: normal;
 }
 
 .maplibregl-ctrl-group {
@@ -736,18 +760,31 @@ h2 {
 }
 
 .workspace.admin-workspace {
-  grid-template-columns: min(340px, 38vw) 1fr;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  grid-template-columns: none;
 }
 
 .admin-sidebar {
   display: flex;
   flex-direction: column;
+  flex: 0 0 300px;
+  width: 300px;
+  max-width: 300px;
+  min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   overflow: auto;
   background: var(--paper);
   border-right: 1px solid var(--line);
   padding: 16px 18px 20px;
+}
+
+.admin-workspace .map-wrap {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
 }
 
 .admin-topbar {
@@ -772,9 +809,10 @@ h2 {
 
 .admin-tools {
   display: grid;
-  grid-template-columns: 1fr 118px;
+  grid-template-columns: minmax(0, 1fr) 108px;
   gap: 8px;
   margin-bottom: 10px;
+  min-width: 0;
 }
 
 .admin-tools input,
@@ -868,13 +906,15 @@ h2 {
   border-radius: 8px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .admin-topbar {
     grid-template-columns: 1fr auto;
     grid-template-areas:
       "nav actions"
       "search search";
-    row-gap: 8px;
+    row-gap: 6px;
+    min-height: 0;
+    padding: max(6px, env(safe-area-inset-top)) 10px 8px;
   }
 
   .admin-topbar .page-nav {
@@ -889,6 +929,54 @@ h2 {
     grid-area: actions;
   }
 
+  .workspace.admin-workspace {
+    flex-direction: column-reverse;
+  }
+
+  .admin-workspace .map-wrap {
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 220px;
+  }
+
+  .admin-sidebar {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: none;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    max-height: min(38dvh, 340px);
+    border-radius: 14px 14px 0 0;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .admin-workspace.is-editing .admin-sidebar {
+    max-height: min(52dvh, 440px);
+  }
+
+  .admin-sidebar .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--paper);
+    padding-top: 10px;
+    padding-bottom: 4px;
+  }
+
+  .admin-tools {
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 36%);
+  }
+
+  .admin-table {
+    font-size: 12px;
+    table-layout: fixed;
+  }
+
+  .admin-table td:first-child {
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 900px) {
   .topbar,
   .about-top {
     min-height: 56px;
@@ -924,22 +1012,12 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .workspace.admin-workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) minmax(240px, 42dvh);
+  .admin-flag {
+    display: none;
   }
 
-  .admin-workspace .map-wrap {
-    order: 1;
-    min-height: 0;
-  }
-
-  .admin-sidebar {
-    order: 2;
-    border-right: 0;
-    border-top: 1px solid var(--line);
-    height: 100%;
-    max-height: none;
+  .maplibregl-ctrl-scale {
+    display: none !important;
   }
 
   .panel-scrim {
@@ -996,6 +1074,10 @@ h2 {
   .panel,
   .workspace.is-list-open .panel {
     max-height: min(58dvh, 520px);
+  }
+
+  .admin-sidebar .add-empty {
+    padding: 12px 8px 8px;
   }
 
   .details dl,

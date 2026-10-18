@@ -3,7 +3,10 @@ const WEEK = 60 * 60 * 24 * 7;
 const encoder = new TextEncoder();
 
 function secret() {
-  return process.env.AUTH_SECRET || process.env.ADMIN_PASSWORD || "";
+  return (
+    normalizeSecret(process.env.AUTH_SECRET ?? "") ||
+    normalizeSecret(process.env.ADMIN_PASSWORD ?? "")
+  );
 }
 
 function hex(buffer: ArrayBuffer) {
@@ -43,10 +46,19 @@ export async function verifySessionToken(token: string | undefined) {
   return safeEqual(signature, await hmac(payload));
 }
 
+function normalizeSecret(value: string) {
+  return value.trim().replace(/^["']|["']$/g, "");
+}
+
+export function adminPasswordConfigured() {
+  return Boolean(normalizeSecret(process.env.ADMIN_PASSWORD ?? ""));
+}
+
 export function passwordMatches(password: string) {
-  const expected = process.env.ADMIN_PASSWORD ?? "";
-  if (!expected || !password) return false;
-  return safeEqual(password, expected);
+  const expected = normalizeSecret(process.env.ADMIN_PASSWORD ?? "");
+  const given = password.trim();
+  if (!expected || !given) return false;
+  return safeEqual(given, expected);
 }
 
 export const sessionCookie = {

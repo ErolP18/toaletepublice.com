@@ -386,7 +386,7 @@ export default function AdminApp() {
         </p>
       ) : null}
 
-      <div className="workspace admin-workspace">
+      <div className={`workspace admin-workspace${browsingList ? "" : " is-editing"}`}>
         <aside className="admin-sidebar">
           {browsingList ? (
             <div className="admin-tools">
