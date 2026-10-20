@@ -17,7 +17,7 @@ Harta citește ce e în baza de date. Toaletele se adaugă din admin. Publicul v
 
 Adminul nu stă pe `/admin` în producție. Pui `NEXT_PUBLIC_ADMIN_PATH` (o cale greu de ghicit), iar Google e oprit să o indexeze. Intrarea e un cod de 6 cifre pe `erol@ciucur.com`, prin Proton SMTP. Parola din `.env.local` rămâne ca rezervă dacă mailul nu merge.
 
-În Coolify nu seta `DATABASE_URL`.
+În Coolify nu seta `DATABASE_URL`. Build pack: **Dockerfile** (nu Nixpacks), port **3000**. Nixpacks scrie tot mediul în imagine, inclusiv `SMTP_PASS`; un `$` din tokenul Proton rupe deploy-ul. Secretul SMTP rămâne doar la runtime, în container.
 
 ## Mail Proton
 

@@ -1,0 +1,12 @@
+[variables]
+NIXPACKS_NODE_VERSION = "22"
+NPM_CONFIG_PRODUCTION = "false"
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npx next start -H 0.0.0.0 -p 3000"

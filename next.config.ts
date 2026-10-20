@@ -27,7 +27,12 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  output: "standalone",
   poweredByHeader: false,
+  serverExternalPackages: ["nodemailer"],
+  outputFileTracingIncludes: {
+    "/api/admin/*": ["./node_modules/nodemailer/**/*"],
+  },
   async headers() {
     return [
       {
