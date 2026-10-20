@@ -14,6 +14,7 @@ import {
   sortToilets,
   toiletCostLabel,
 } from "@/lib/toilets";
+import { googleMapsPlaceUrl } from "@/lib/maps";
 import type { Toilet } from "@/lib/types";
 import SearchBox from "@/components/SearchBox";
 
@@ -266,8 +267,6 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
 }
 
 function ToiletDetails({ toilet, onBack }: { toilet: Toilet; onBack: () => void }) {
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${toilet.lat},${toilet.lng}`;
-
   return (
     <article className="details">
       <button type="button" className="back" onClick={onBack}>
@@ -309,8 +308,13 @@ function ToiletDetails({ toilet, onBack }: { toilet: Toilet; onBack: () => void 
         </div>
       </dl>
       {toilet.notes ? <p className="notes">{toilet.notes}</p> : null}
-      <a className="primary block" href={mapsUrl} target="_blank" rel="noreferrer">
-        Navighează
+      <a
+        className="primary block"
+        href={googleMapsPlaceUrl(toilet.lat, toilet.lng)}
+        target="_blank"
+        rel="noreferrer"
+      >
+        Deschide în Google Maps
       </a>
     </article>
   );

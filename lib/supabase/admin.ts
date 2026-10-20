@@ -1,11 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { supabasePublishableKey, supabaseSecretKey, supabaseUrl } from "./env";
+import { supabaseSecretKey, supabaseUrl } from "./env";
 
 export function createSupabaseAdminClient() {
   const url = supabaseUrl();
-  const key = supabaseSecretKey() || supabasePublishableKey();
+  const key = supabaseSecretKey();
   if (!url || !key) {
-    throw new Error("Supabase nu e configurat. Setează URL-ul și cheile în mediu.");
+    throw new Error("Supabase nu e configurat. Setează URL-ul și SUPABASE_SECRET_KEY în mediu.");
   }
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },

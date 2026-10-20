@@ -1,14 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
-import { findCity, type MapStyleId } from "@/lib/romania";
+import { googleMapsPlaceUrl, needsMapsResolve, parseMapsCoords } from "@/lib/maps";
+import { findCity, isInsideRomaniaEnvelope, type MapStyleId } from "@/lib/romania";
 import type { SearchSuggestion } from "@/lib/suggest";
 import { matchesToilet, sortToilets } from "@/lib/toilets";
 import type { Toilet, ToiletDraft, ToiletStatus, ToiletType } from "@/lib/types";
+import AdminNav from "@/components/AdminNav";
 import SearchBox from "@/components/SearchBox";
 
 const MapView = dynamic(() => import("@/components/MapView"), {
@@ -72,6 +73,8 @@ export default function AdminApp() {
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(
     null,
   );
+  const editRef = useRef(edit);
+  editRef.current = edit;
 
   async function load() {
     const data = await readApi<Toilet[]>(await fetch("/api/admin/toilets"));
@@ -241,6 +244,48 @@ export default function AdminApp() {
     return await readApi<Toilet>(response);
   }
 
+  async function applyPhoto(file: File) {
+    const ready = namedImage(file);
+    if (!ready) {
+      setError("Folosește JPG, PNG sau WebP.");
+      return;
+    }
+    setError("");
+    const current = editRef.current;
+    if (!current) {
+      setPhotoFile(ready);
+      return;
+    }
+    setBusy(true);
+    try {
+      const saved = await uploadPhoto(current.id, ready);
+      await load();
+      setPhotoFile(null);
+      setEdit(saved);
+      setNotice("Poza e salvată.");
+    } catch (err) {
+      setPhotoFile(ready);
+      setError(err instanceof Error ? err.message : "Nu am putut salva poza.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const applyPhotoRef = useRef(applyPhoto);
+  applyPhotoRef.current = applyPhoto;
+
+  useEffect(() => {
+    if (!addMode && !edit) return;
+    function onPaste(event: ClipboardEvent) {
+      const file = fileFromClipboard(event.clipboardData);
+      if (!file) return;
+      event.preventDefault();
+      void applyPhotoRef.current(file);
+    }
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [addMode, edit]);
+
   async function removePhoto(id: string) {
     if (!window.confirm("Scoți poza?")) return;
     setBusy(true);
@@ -335,18 +380,16 @@ export default function AdminApp() {
     }
   }
 
-  async function logout() {
-    await fetch("/api/admin/logout", { method: "POST" });
-    window.location.href = "/admin/login";
-  }
-
   return (
     <div className="app-shell">
-      <header className="topbar admin-topbar">
-        <nav className="page-nav">
-          <Link href="/">Hartă</Link>
-          <span className="admin-flag">Admin</span>
-        </nav>
+      <AdminNav
+        current="toilets"
+        actions={
+          <button type="button" className="ghost" onClick={startAdd} aria-pressed={addMode}>
+            Adaugă
+          </button>
+        }
+      >
         <SearchBox
           value={placeQuery}
           toilets={toilets}
@@ -356,15 +399,7 @@ export default function AdminApp() {
           onSubmit={() => void goToQuery()}
           onPick={applyPlaceSuggestion}
         />
-        <div className="admin-actions">
-          <button type="button" className="ghost" onClick={startAdd} aria-pressed={addMode}>
-            Adaugă
-          </button>
-          <button type="button" className="ghost" onClick={() => void logout()}>
-            Ieșire
-          </button>
-        </div>
-      </header>
+      </AdminNav>
 
       {notice ? <p className="banner">{notice}</p> : null}
       {error ? (
@@ -419,8 +454,12 @@ export default function AdminApp() {
               geocoding={geocoding}
               busy={busy}
               photoFile={photoFile}
-              onPhoto={setPhotoFile}
+              onPhoto={(file) => void applyPhoto(file)}
               onChange={setDraft}
+              onPlace={(lat, lng) => {
+                setFlyTo({ lat, lng, zoom: 18 });
+                void placeDraft(lat, lng);
+              }}
               onSave={() => void saveNew()}
               onCancel={cancelAdd}
             />
@@ -430,8 +469,12 @@ export default function AdminApp() {
               geocoding={geocoding}
               busy={busy}
               photoFile={photoFile}
-              onPhoto={setPhotoFile}
+              onPhoto={(file) => void applyPhoto(file)}
               onChange={setEdit}
+              onPlace={(lat, lng) => {
+                setFlyTo({ lat, lng, zoom: 18 });
+                void moveEdit(lat, lng);
+              }}
               onSave={() => void saveEdit()}
               onCancel={() => {
                 setEdit(null);
@@ -521,6 +564,7 @@ function AdminForm({
   photoFile,
   onPhoto,
   onChange,
+  onPlace,
   onSave,
   onCancel,
 }: {
@@ -528,15 +572,17 @@ function AdminForm({
   geocoding: boolean;
   busy: boolean;
   photoFile: File | null;
-  onPhoto: (file: File | null) => void;
+  onPhoto: (file: File) => void;
   onChange: (draft: ToiletDraft | null) => void;
+  onPlace: (lat: number, lng: number) => void;
   onSave: () => void;
   onCancel: () => void;
 }) {
   if (!draft) {
     return (
       <div className="add-empty">
-        <p>Caută o stradă sus sau apasă pe hartă.</p>
+        <p>Caută o stradă sus, apasă pe hartă sau lipește un link din Google Maps.</p>
+        <MapsPasteField onPlace={onPlace} />
         <button type="button" className="ghost" onClick={onCancel}>
           Anulează
         </button>
@@ -557,8 +603,12 @@ function AdminForm({
     >
       <p className="coords">
         {draft.lat.toFixed(6)}, {draft.lng.toFixed(6)}
-        {geocoding ? " · citesc adresa…" : ""}
+        {geocoding ? " · citesc adresa…" : ""}{" "}
+        <a href={googleMapsPlaceUrl(draft.lat, draft.lng)} target="_blank" rel="noreferrer">
+          Google Maps
+        </a>
       </p>
+      <MapsPasteField onPlace={onPlace} />
       <Fields
         name={draft.name}
         address={draft.address}
@@ -572,6 +622,7 @@ function AdminForm({
         free={draft.free}
         notes={draft.notes}
         photoFile={photoFile}
+        photoBusy={busy}
         onPhoto={onPhoto}
         onChange={update}
         focusName
@@ -595,6 +646,7 @@ function EditForm({
   photoFile,
   onPhoto,
   onChange,
+  onPlace,
   onSave,
   onCancel,
   onDelete,
@@ -604,8 +656,9 @@ function EditForm({
   geocoding: boolean;
   busy: boolean;
   photoFile: File | null;
-  onPhoto: (file: File | null) => void;
+  onPhoto: (file: File) => void;
   onChange: (toilet: Toilet) => void;
+  onPlace: (lat: number, lng: number) => void;
   onSave: () => void;
   onCancel: () => void;
   onDelete: () => void;
@@ -626,8 +679,12 @@ function EditForm({
       </button>
       <p className="coords">
         {toilet.lat.toFixed(6)}, {toilet.lng.toFixed(6)}
-        {geocoding ? " · citesc adresa…" : ""}
+        {geocoding ? " · citesc adresa…" : ""}{" "}
+        <a href={googleMapsPlaceUrl(toilet.lat, toilet.lng)} target="_blank" rel="noreferrer">
+          Google Maps
+        </a>
       </p>
+      <MapsPasteField onPlace={onPlace} />
       <Fields
         name={toilet.name}
         address={toilet.address ?? ""}
@@ -642,6 +699,8 @@ function EditForm({
         notes={toilet.notes ?? ""}
         photo={toilet.photo}
         photoFile={photoFile}
+        photoBusy={busy}
+        photoImmediate
         onPhoto={onPhoto}
         onRemovePhoto={onRemovePhoto}
         onChange={update}
@@ -679,6 +738,8 @@ function Fields({
   notes,
   photo,
   photoFile,
+  photoBusy,
+  photoImmediate,
   onPhoto,
   onRemovePhoto,
   onChange,
@@ -697,7 +758,9 @@ function Fields({
   notes: string;
   photo?: string;
   photoFile?: File | null;
-  onPhoto?: (file: File | null) => void;
+  photoBusy?: boolean;
+  photoImmediate?: boolean;
+  onPhoto?: (file: File) => void;
   onRemovePhoto?: () => void;
   onChange: (patch: Partial<ToiletDraft>) => void;
   focusName?: boolean;
@@ -786,23 +849,14 @@ function Fields({
         />
       </label>
       {onPhoto ? (
-        <div className="photo-field">
-          {photo ? <img src={photo} alt="" className="photo-preview" /> : null}
-          <label>
-            Poză
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(event) => onPhoto(event.target.files?.[0] ?? null)}
-            />
-          </label>
-          {photoFile ? <p className="hint">{photoFile.name}</p> : null}
-          {photo && onRemovePhoto ? (
-            <button type="button" className="ghost" onClick={onRemovePhoto}>
-              Scoate poza
-            </button>
-          ) : null}
-        </div>
+        <PhotoField
+          photo={photo}
+          photoFile={photoFile}
+          busy={photoBusy}
+          immediate={photoImmediate}
+          onPhoto={onPhoto}
+          onRemovePhoto={onRemovePhoto}
+        />
       ) : null}
       <div className="checks">
         <label className="check">
@@ -840,4 +894,181 @@ function Fields({
       </label>
     </>
   );
+}
+
+function MapsPasteField({ onPlace }: { onPlace: (lat: number, lng: number) => void }) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function apply(raw: string) {
+    const text = raw.trim();
+    if (!text) return;
+    setError("");
+    const local = parseMapsCoords(text);
+    if (local) {
+      if (!isInsideRomaniaEnvelope(local.lat, local.lng)) {
+        setError("Locul pare în afara României.");
+        return;
+      }
+      onPlace(local.lat, local.lng);
+      setValue("");
+      return;
+    }
+    if (!needsMapsResolve(text) && !/^https?:\/\//i.test(text)) {
+      setError("Lipește un link din Google Maps sau coordonate.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/geocode/maps?url=${encodeURIComponent(text)}`);
+      const data = (await response.json()) as { lat?: number; lng?: number; error?: string };
+      if (!response.ok || data.lat == null || data.lng == null) {
+        setError(data.error || "Nu am găsit coordonatele.");
+        return;
+      }
+      onPlace(data.lat, data.lng);
+      setValue("");
+    } catch {
+      setError("Nu am putut citi linkul.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <label className="maps-paste">
+      Link Google Maps
+      <input
+        type="text"
+        inputMode="url"
+        value={value}
+        placeholder="https://maps.app.goo.gl/…"
+        disabled={busy}
+        onChange={(event) => setValue(event.target.value)}
+        onPaste={(event) => {
+          const text = event.clipboardData.getData("text");
+          if (!text.trim()) return;
+          event.preventDefault();
+          setValue(text);
+          void apply(text);
+        }}
+        onBlur={() => void apply(value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            void apply(value);
+          }
+        }}
+      />
+      {busy ? <p className="hint">Citesc linkul…</p> : null}
+      {error ? <p className="hint">{error}</p> : null}
+    </label>
+  );
+}
+
+const PHOTO_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/jpg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+function namedImage(file: File) {
+  const type = file.type === "image/jpg" ? "image/jpeg" : file.type;
+  const ext = PHOTO_TYPES[type];
+  if (!ext) return null;
+  const name = file.name && file.name.includes(".") ? file.name : `poza.${ext}`;
+  return new File([file], name, { type: type === "image/jpg" ? "image/jpeg" : type });
+}
+
+function fileFromClipboard(data: DataTransfer | null) {
+  if (!data) return null;
+  for (const item of data.items) {
+    if (item.kind === "file" && item.type.startsWith("image/")) {
+      const file = item.getAsFile();
+      if (file) return file;
+    }
+  }
+  for (const file of data.files) {
+    if (file.type.startsWith("image/")) return file;
+  }
+  return null;
+}
+
+function PhotoField({
+  photo,
+  photoFile,
+  busy,
+  immediate,
+  onPhoto,
+  onRemovePhoto,
+}: {
+  photo?: string;
+  photoFile?: File | null;
+  busy?: boolean;
+  immediate?: boolean;
+  onPhoto: (file: File) => void;
+  onRemovePhoto?: () => void;
+}) {
+  const preview = useObjectUrl(photoFile);
+  const shown = preview || photo;
+  const [over, setOver] = useState(false);
+
+  return (
+    <div
+      className={`photo-field${over ? " is-over" : ""}`}
+      onDragOver={(event) => {
+        if (![...event.dataTransfer.items].some((item) => item.type.startsWith("image/"))) return;
+        event.preventDefault();
+        setOver(true);
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(event) => {
+        event.preventDefault();
+        setOver(false);
+        const file = fileFromClipboard(event.dataTransfer);
+        if (file) onPhoto(file);
+      }}
+    >
+      {shown ? <img src={shown} alt="" className="photo-preview" /> : null}
+      <label>
+        Poză
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={busy}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) onPhoto(file);
+          }}
+        />
+      </label>
+      <p className="hint">
+        {immediate
+          ? "Lipește o poză sau alege un fișier. Se salvează imediat."
+          : "Lipește o poză sau alege un fișier. Se salvează odată cu toaleta."}
+      </p>
+      {photo && onRemovePhoto ? (
+        <button type="button" className="ghost" onClick={onRemovePhoto} disabled={busy}>
+          Scoate poza
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function useObjectUrl(file: File | null | undefined) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) {
+      setUrl(null);
+      return;
+    }
+    const next = URL.createObjectURL(file);
+    setUrl(next);
+    return () => URL.revokeObjectURL(next);
+  }, [file]);
+  return url;
 }

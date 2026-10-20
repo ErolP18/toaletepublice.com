@@ -1,0 +1,1613 @@
+[
+  {
+    "id": "arad-primaria-almas",
+    "name": "Primăria Almaş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Almaş",
+    "email": "",
+    "notes": "Principală, nr. 605, Almas"
+  },
+  {
+    "id": "arad-primaria-archis",
+    "name": "Primăria Archiş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Archiş",
+    "email": "",
+    "notes": "Principală, nr. 97, Archis"
+  },
+  {
+    "id": "arad-primaria-barsa",
+    "name": "Primăria Bârsa",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Bârsa",
+    "email": "",
+    "notes": "Nr. 200, Barsa"
+  },
+  {
+    "id": "arad-primaria-barzava",
+    "name": "Primăria Bârzava",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Bârzava",
+    "email": "",
+    "notes": "Principală, nr. 314, Barzava"
+  },
+  {
+    "id": "arad-primaria-conop",
+    "name": "Primăria Conop",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Conop",
+    "email": "",
+    "notes": "Principală, nr. 4, Conop"
+  },
+  {
+    "id": "arad-primaria-covasant",
+    "name": "Primăria Covăsânţ",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Covăsânţ",
+    "email": "",
+    "notes": "Str. Corneliu Micloşi, Nr. 23, Covasint"
+  },
+  {
+    "id": "arad-primaria-curtici",
+    "name": "Primăria Curtici",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Curtici",
+    "email": "",
+    "notes": "Primăriei, nr. 47, Curtici"
+  },
+  {
+    "id": "arad-primaria-ghioroc",
+    "name": "Primăria Ghioroc",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Ghioroc",
+    "email": "",
+    "notes": "nr. 89, Ghioroc"
+  },
+  {
+    "id": "arad-primaria-halmagel",
+    "name": "Primăria Hălmăgel",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Hălmăgel",
+    "email": "",
+    "notes": "Principală, nr. 1/A, Halmagel"
+  },
+  {
+    "id": "arad-primaria-halmagiu",
+    "name": "Primăria Hălmagiu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Hălmagiu",
+    "email": "",
+    "notes": "Primăriei, nr. 9, Halmagiu"
+  },
+  {
+    "id": "arad-primaria-ineu",
+    "name": "Primăria Ineu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Ineu",
+    "email": "",
+    "notes": "Republicii, nr. 5, Ineu"
+  },
+  {
+    "id": "arad-primaria-pecica",
+    "name": "Primăria Pecica",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Pecica",
+    "email": "",
+    "notes": "Strada 2, nr. 150, Pecica"
+  },
+  {
+    "id": "arad-primaria-sebis",
+    "name": "Primăria Sebiş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Sebiş",
+    "email": "",
+    "notes": "Piața Tineretului, nr. 1, Sebis"
+  },
+  {
+    "id": "arad-primaria-sepreus",
+    "name": "Primăria Şepreuş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şepreuş",
+    "email": "",
+    "notes": "Piaţa Rebeliunii, nr. 1, Sepreus"
+  },
+  {
+    "id": "arad-primaria-sintea-mare",
+    "name": "Primăria Sintea Mare",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Sintea Mare",
+    "email": "",
+    "notes": "Principală, nr. 228, Sintea Mare"
+  },
+  {
+    "id": "arad-primaria-zabrani",
+    "name": "Primăria Zăbrani",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Zăbrani",
+    "email": "",
+    "notes": "Principală, nr. 95, Zabrani"
+  },
+  {
+    "id": "arad-primaria-zadareni",
+    "name": "Primăria Zădăreni",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Zădăreni",
+    "email": "",
+    "notes": "nr. 28, Zadareni"
+  },
+  {
+    "id": "arad-consiliul-judetean-arad",
+    "name": "Consiliul Județean Arad",
+    "kind": "consiliu_judetean",
+    "county": "Arad",
+    "city": "Arad",
+    "email": "",
+    "notes": "Str. Corneliu Coposu, Nr. 22, Arad"
+  },
+  {
+    "id": "arad-prefectura-judetului-arad",
+    "name": "Prefectura Județului Arad",
+    "kind": "alta",
+    "county": "Arad",
+    "city": "Arad",
+    "email": "",
+    "notes": "B-dul Revoluției, nr.75, Arad"
+  },
+  {
+    "id": "arad-primaria-apateu",
+    "name": "Primăria Apateu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Apateu",
+    "email": "",
+    "notes": "Principală, nr. 364, Apateu"
+  },
+  {
+    "id": "arad-primaria-arad",
+    "name": "Primăria Arad",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Arad",
+    "email": "",
+    "notes": "B-dul Revoluţiei, nr. 75, Arad"
+  },
+  {
+    "id": "arad-primaria-bata",
+    "name": "Primăria Bata",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Bata",
+    "email": "",
+    "notes": "Principală, nr. 166, Bata"
+  },
+  {
+    "id": "arad-primaria-beliu",
+    "name": "Primăria Beliu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Beliu",
+    "email": "",
+    "notes": "Str. 1 nr. 632, Beliu"
+  },
+  {
+    "id": "arad-primaria-birchis",
+    "name": "Primăria Birchiş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Birchiş",
+    "email": "",
+    "notes": "Principală, nr. 162, Birchis"
+  },
+  {
+    "id": "arad-primaria-bocsig",
+    "name": "Primăria Bocsig",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Bocsig",
+    "email": "",
+    "notes": "Principală, nr. 591, Bocsig"
+  },
+  {
+    "id": "arad-primaria-brazii",
+    "name": "Primăria Brazii",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Brazii",
+    "email": "",
+    "notes": "Brazii, nr. 26, Brazii"
+  },
+  {
+    "id": "arad-primaria-buteni",
+    "name": "Primăria Buteni",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Buteni",
+    "email": "",
+    "notes": "Principală, nr. 78, Buteni"
+  },
+  {
+    "id": "arad-primaria-carand",
+    "name": "Primăria Cărand",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Cărand",
+    "email": "",
+    "notes": "Principală, nr. 71/B, Carand"
+  },
+  {
+    "id": "arad-primaria-cermei",
+    "name": "Primăria Cermei",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Cermei",
+    "email": "",
+    "notes": "Principală, nr. 304, Cermei"
+  },
+  {
+    "id": "arad-primaria-chisindia",
+    "name": "Primăria Chisindia",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Chisindia",
+    "email": "",
+    "notes": "Principală, nr. 191/A, Chisindia"
+  },
+  {
+    "id": "arad-primaria-chisineu-cris",
+    "name": "Primăria Chişineu-criş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Chişineu-criş",
+    "email": "",
+    "notes": "Infrăţirii, nr. 97, Chisineu-Cris"
+  },
+  {
+    "id": "arad-primaria-craiva",
+    "name": "Primăria Craiva",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Craiva",
+    "email": "",
+    "notes": "Principală, nr. 108, Craiva"
+  },
+  {
+    "id": "arad-primaria-dezna",
+    "name": "Primăria Dezna",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Dezna",
+    "email": "",
+    "notes": "Avram Iancu, nr. 63, Dezna"
+  },
+  {
+    "id": "arad-primaria-dieci",
+    "name": "Primăria Dieci",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Dieci",
+    "email": "",
+    "notes": "Principală, nr. 139 A, Dieci"
+  },
+  {
+    "id": "arad-primaria-dorobanti",
+    "name": "Primăria Dorobanţi",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Dorobanţi",
+    "email": "",
+    "notes": "nr. 410, Dorobanti"
+  },
+  {
+    "id": "arad-primaria-fantanele",
+    "name": "Primăria Fântânele",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Fântânele",
+    "email": "",
+    "notes": "Principală, nr. 115, Fantanele"
+  },
+  {
+    "id": "arad-primaria-felnac",
+    "name": "Primăria Felnac",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Felnac",
+    "email": "",
+    "notes": "Trei nr. 330, Felnac"
+  },
+  {
+    "id": "arad-primaria-frumuseni",
+    "name": "Primăria Frumuşeni",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Frumuşeni",
+    "email": "",
+    "notes": ", Frumuseni"
+  },
+  {
+    "id": "arad-primaria-graniceri",
+    "name": "Primăria Grăniceri",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Grăniceri",
+    "email": "",
+    "notes": "Principală, nr. 10, Graniceri"
+  },
+  {
+    "id": "arad-primaria-gurahont",
+    "name": "Primăria Gurahonţ",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Gurahonţ",
+    "email": "",
+    "notes": "Gurahonț, Avram Iancu, nr. 29, Gurahont"
+  },
+  {
+    "id": "arad-primaria-hasmas",
+    "name": "Primăria Hăşmaş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Hăşmaş",
+    "email": "",
+    "notes": "Str. Principală, nr. 216, Hasmas"
+  },
+  {
+    "id": "arad-primaria-ignesti",
+    "name": "Primăria Igneşti",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Igneşti",
+    "email": "",
+    "notes": "Principală, nr. 24, Ignesti"
+  },
+  {
+    "id": "arad-primaria-iratosu",
+    "name": "Primăria Iratoşu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Iratoşu",
+    "email": "",
+    "notes": "Principală, nr. 1, Iratosu"
+  },
+  {
+    "id": "arad-primaria-lipova",
+    "name": "Primăria Lipova",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Lipova",
+    "email": "",
+    "notes": "Nicolae Bălcescu, nr. 26, Lipova"
+  },
+  {
+    "id": "arad-primaria-livada",
+    "name": "Primăria Livada",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Livada",
+    "email": "",
+    "notes": "nr. 355, Livada"
+  },
+  {
+    "id": "arad-primaria-macea",
+    "name": "Primăria Macea",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Macea",
+    "email": "",
+    "notes": "Principală, nr. 262, Macea"
+  },
+  {
+    "id": "arad-primaria-misca",
+    "name": "Primăria Mişca",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Mişca",
+    "email": "",
+    "notes": "Principală, nr. 116, Misca"
+  },
+  {
+    "id": "arad-primaria-moneasa",
+    "name": "Primăria Moneasa",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Moneasa",
+    "email": "",
+    "notes": "Str. Principală, Nr. 71, Moneasa"
+  },
+  {
+    "id": "arad-primaria-olari",
+    "name": "Primăria Olari",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Olari",
+    "email": "",
+    "notes": "Narciselor 21, Olari"
+  },
+  {
+    "id": "arad-primaria-nadlac",
+    "name": "Primăria Nădlac",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Nădlac",
+    "email": "",
+    "notes": "1 Decembrie, nr. 24, Nadlac"
+  },
+  {
+    "id": "arad-primaria-pancota",
+    "name": "Primăria Pâncota",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Pâncota",
+    "email": "",
+    "notes": "Tudor Vladimirescu, nr. 69, Pancota"
+  },
+  {
+    "id": "arad-primaria-paulis",
+    "name": "Primăria Păuliş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Păuliş",
+    "email": "",
+    "notes": "Eroilor nr 2, Paulis"
+  },
+  {
+    "id": "arad-primaria-peregu-mare",
+    "name": "Primăria Peregu Mare",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Peregu Mare",
+    "email": "",
+    "notes": "Principală, nr. 137, Peregu Mare"
+  },
+  {
+    "id": "arad-primaria-petris",
+    "name": "Primăria Petriş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Petriş",
+    "email": "",
+    "notes": "Principală, nr. 253, Petris"
+  },
+  {
+    "id": "arad-primaria-pilu",
+    "name": "Primăria Pilu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Pilu",
+    "email": "",
+    "notes": "Principală, nr. 69, Pilu"
+  },
+  {
+    "id": "arad-primaria-plescuta",
+    "name": "Primăria Pleşcuţa",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Pleşcuţa",
+    "email": "",
+    "notes": "Primăriei, 49, Plescuta"
+  },
+  {
+    "id": "arad-primaria-sagu",
+    "name": "Primăria Şagu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şagu",
+    "email": "",
+    "notes": "Principală, nr. 219, Sagu"
+  },
+  {
+    "id": "arad-primaria-santana",
+    "name": "Primăria Sântana",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Sântana",
+    "email": "",
+    "notes": "Muncii, nr. 120A, Santana"
+  },
+  {
+    "id": "arad-primaria-savarsin",
+    "name": "Primăria Săvârşin",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Săvârşin",
+    "email": "",
+    "notes": "Principală, nr. 37, Savarsin"
+  },
+  {
+    "id": "arad-primaria-secusigiu",
+    "name": "Primăria Secusigiu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Secusigiu",
+    "email": "",
+    "notes": "Principală, nr. 275, Secusigiu"
+  },
+  {
+    "id": "arad-primaria-seitin",
+    "name": "Primăria Şeitin",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şeitin",
+    "email": "",
+    "notes": "Revoluţiei, nr. 47, Seitin"
+  },
+  {
+    "id": "arad-primaria-seleus",
+    "name": "Primăria Seleuş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Seleuş",
+    "email": "",
+    "notes": "Principală, nr. 200, Seleus"
+  },
+  {
+    "id": "arad-primaria-semlac",
+    "name": "Primăria Semlac",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Semlac",
+    "email": "",
+    "notes": "Principală, nr. 656, Semlac"
+  },
+  {
+    "id": "arad-primaria-sicula",
+    "name": "Primăria Şicula",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şicula",
+    "email": "",
+    "notes": "Principală, nr. 200, Sicula"
+  },
+  {
+    "id": "arad-primaria-silindia",
+    "name": "Primăria Şilindia",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şilindia",
+    "email": "",
+    "notes": "Principală, nr. 384, Silindia"
+  },
+  {
+    "id": "arad-primaria-simand",
+    "name": "Primăria Şimand",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şimand",
+    "email": "",
+    "notes": "Principală, nr. 1119, Simand"
+  },
+  {
+    "id": "arad-primaria-siria",
+    "name": "Primăria Şiria",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şiria",
+    "email": "",
+    "notes": "Regiment 85 Infanterie, nr. 10, Siria"
+  },
+  {
+    "id": "arad-primaria-sistarovat",
+    "name": "Primăria Şistarovăţ",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şistarovăţ",
+    "email": "",
+    "notes": "Principală, nr. 116, Sistarovat"
+  },
+  {
+    "id": "arad-primaria-socodor",
+    "name": "Primăria Socodor",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Socodor",
+    "email": "",
+    "notes": "Principală, nr. 1, Socodor"
+  },
+  {
+    "id": "arad-primaria-sofronea",
+    "name": "Primăria Şofronea",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Şofronea",
+    "email": "",
+    "notes": "Str.8, nr.7, Sofronea"
+  },
+  {
+    "id": "arad-primaria-tarnova",
+    "name": "Primăria Târnova",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Târnova",
+    "email": "",
+    "notes": "Principală, nr. 734, Tarnova"
+  },
+  {
+    "id": "arad-primaria-taut",
+    "name": "Primăria Tauţ",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Tauţ",
+    "email": "",
+    "notes": "Principală, nr. 613, Taut"
+  },
+  {
+    "id": "arad-primaria-ususau",
+    "name": "Primăria Ususău",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Ususău",
+    "email": "",
+    "notes": "Principală, nr. 87A, Ususau"
+  },
+  {
+    "id": "arad-primaria-varadia-de-mures",
+    "name": "Primăria Vărădia de Mureş",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Vărădia de Mureş",
+    "email": "",
+    "notes": "Principală, nr. 126, Varadia de Mures"
+  },
+  {
+    "id": "arad-primaria-varfurile",
+    "name": "Primăria Vârfurile",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Vârfurile",
+    "email": "",
+    "notes": "Primăriei, nr. 286, Varfurile"
+  },
+  {
+    "id": "arad-primaria-vinga",
+    "name": "Primăria Vinga",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Vinga",
+    "email": "",
+    "notes": "P-Ta Sfânta Treime nr.9, Vinga"
+  },
+  {
+    "id": "arad-primaria-vladimirescu",
+    "name": "Primăria Vladimirescu",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Vladimirescu",
+    "email": "",
+    "notes": "Revoluţiei, nr. 4, Vladimirescu"
+  },
+  {
+    "id": "arad-primaria-zarand",
+    "name": "Primăria Zărand",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Zărand",
+    "email": "",
+    "notes": "Principală, nr. 512, Zarand"
+  },
+  {
+    "id": "arad-primaria-zerind",
+    "name": "Primăria Zerind",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Zerind",
+    "email": "",
+    "notes": "Principală, nr. 1, Zerind"
+  },
+  {
+    "id": "arad-primaria-zimandu-nou",
+    "name": "Primăria Zimandu Nou",
+    "kind": "primarie",
+    "county": "Arad",
+    "city": "Zimandu Nou",
+    "email": "",
+    "notes": "Principală, nr. 248, Zimandu Nou"
+  },
+  {
+    "id": "timis-primaria-timisoara",
+    "name": "Primăria Timişoara",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Timişoara",
+    "email": "primariatm@primariatm.ro",
+    "notes": "cabinetprimar@primariatm.ro"
+  },
+  {
+    "id": "timis-primaria-lugoj",
+    "name": "Primăria Lugoj",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Lugoj",
+    "email": "contact@primarialugoj.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-buzias",
+    "name": "Primăria Buziaș",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Buziaș",
+    "email": "primbuzias@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-ciacova",
+    "name": "Primăria Ciacova",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Ciacova",
+    "email": "primariaciacova@primariaciacova.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-deta",
+    "name": "Primăria Deta",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Deta",
+    "email": "primaria.deta@detatm.ro",
+    "notes": "primaria_deta@net69.ro"
+  },
+  {
+    "id": "timis-primaria-faget",
+    "name": "Primăria Făget",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Făget",
+    "email": "plfaget@online.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-gataia",
+    "name": "Primăria Gătaia",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Gătaia",
+    "email": "primaria_gataia@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-jimbolia",
+    "name": "Primăria Jimbolia",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Jimbolia",
+    "email": "secretariat@jimbolia.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-recas",
+    "name": "Primăria Recaș",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Recaș",
+    "email": "contact@primariarecas.ro",
+    "notes": "public@primariarecas.ro"
+  },
+  {
+    "id": "timis-primaria-sannicolau-mare",
+    "name": "Primăria Sânnicolau Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Sânnicolau Mare",
+    "email": "primaria@sannicolau-mare.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-balint",
+    "name": "Primăria Balinț",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Balinț",
+    "email": "primariabalint@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-banloc",
+    "name": "Primăria Banloc",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Banloc",
+    "email": "banlocprimarie@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-bara",
+    "name": "Primăria Bara",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Bara",
+    "email": "contact@comunabara.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-barna",
+    "name": "Primăria Bârna",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Bârna",
+    "email": "contact@primariabarna.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-beba-veche",
+    "name": "Primăria Beba Veche",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Beba Veche",
+    "email": "secretariat@primariabebaveche.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-becicherecu-mic",
+    "name": "Primăria Becicherecu Mic",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Becicherecu Mic",
+    "email": "becicherecumic@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-belint",
+    "name": "Primăria Belinț",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Belinț",
+    "email": "primariabelint@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-bethausen",
+    "name": "Primăria Bethausen",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Bethausen",
+    "email": "primaria_bethausen@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-biled",
+    "name": "Primăria Biled",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Biled",
+    "email": "secretariat@primariabiled.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-birda",
+    "name": "Primăria Birda",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Birda",
+    "email": "primaria.birda@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-bogda",
+    "name": "Primăria Bogda",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Bogda",
+    "email": "primariabogda@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-boldur",
+    "name": "Primăria Boldur",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Boldur",
+    "email": "primariaboldur@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-brestovat",
+    "name": "Primăria Brestovăț",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Brestovăț",
+    "email": "primaria_brestovat@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-bucovat",
+    "name": "Primăria Bucovăț",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Bucovăț",
+    "email": "primaria@comunabucovat.ro",
+    "notes": "primaria.bucovat.tm@gmail.com"
+  },
+  {
+    "id": "timis-primaria-carpinis",
+    "name": "Primăria Cărpiniș",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Cărpiniș",
+    "email": "contact@primaria-carpinis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-cenad",
+    "name": "Primăria Cenad",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Cenad",
+    "email": "primaria@cenad.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-cenei",
+    "name": "Primăria Cenei",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Cenei",
+    "email": "contact@primariacenei.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-checea",
+    "name": "Primăria Checea",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Checea",
+    "email": "contact@primariachecea.ro",
+    "notes": "primariachecea@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-cheveresu-mare",
+    "name": "Primăria Chevereșu Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Chevereșu Mare",
+    "email": "office@primariacheveresumare.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-comlosu-mare",
+    "name": "Primăria Comloșu Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Comloșu Mare",
+    "email": "primariacomlosumare@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-costeiu",
+    "name": "Primăria Coșteiu",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Coșteiu",
+    "email": "primaria.costeiu@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-criciova",
+    "name": "Primăria Criciova",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Criciova",
+    "email": "contact@primariacriciova.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-curtea",
+    "name": "Primăria Curtea",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Curtea",
+    "email": "primariacomuneicurtea@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-darova",
+    "name": "Primăria Darova",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Darova",
+    "email": "primariadarova@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-denta",
+    "name": "Primăria Denta",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Denta",
+    "email": "primar@primaria-denta.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-dudestii-noi",
+    "name": "Primăria Dudeștii Noi",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Dudeștii Noi",
+    "email": "primariadudestiinoi@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-dudestii-vechi",
+    "name": "Primăria Dudeștii Vechi",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Dudeștii Vechi",
+    "email": "primaria@dudestii-vechi.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-dumbrava",
+    "name": "Primăria Dumbrava",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Dumbrava",
+    "email": "primariadumbrava@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-dumbravita",
+    "name": "Primăria Dumbrăvița",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Dumbrăvița",
+    "email": "contact@primaria-dumbravita.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-fardea",
+    "name": "Primăria Fârdea",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Fârdea",
+    "email": "primaria_firdea@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-fibis",
+    "name": "Primăria Fibiș",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Fibiș",
+    "email": "registratura@comunafibis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-foeni",
+    "name": "Primăria Foeni",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Foeni",
+    "email": "contact@primariafoenitm.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-gavojdia",
+    "name": "Primăria Gavojdia",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Gavojdia",
+    "email": "primgav@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-ghilad",
+    "name": "Primăria Ghilad",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Ghilad",
+    "email": "primariaghilad@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-ghiroda",
+    "name": "Primăria Ghiroda",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Ghiroda",
+    "email": "registratura@primariaghiroda.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-ghizela",
+    "name": "Primăria Ghizela",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Ghizela",
+    "email": "primariaghizela@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-giarmata",
+    "name": "Primăria Giarmata",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Giarmata",
+    "email": "registratura@primariagiarmata.ro",
+    "notes": "primariagiarmata@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-giera",
+    "name": "Primăria Giera",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Giera",
+    "email": "primariagiera@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-giroc",
+    "name": "Primăria Giroc",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Giroc",
+    "email": "contact@giroc.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-giulvaz",
+    "name": "Primăria Giulvăz",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Giulvăz",
+    "email": "registratura@primariagiulvaz.ro",
+    "notes": "primaria_giulvaz@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-gottlob",
+    "name": "Primăria Gottlob",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Gottlob",
+    "email": "comunagottlob@yahoo.com",
+    "notes": "primaria.gottlob@cjtimis.ro"
+  },
+  {
+    "id": "timis-primaria-iecea-mare",
+    "name": "Primăria Iecea Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Iecea Mare",
+    "email": "primaria_ieceamare@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-jamu-mare",
+    "name": "Primăria Jamu Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Jamu Mare",
+    "email": "primariajamumare@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-jebel",
+    "name": "Primăria Jebel",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Jebel",
+    "email": "primaria.jebel@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-lenauheim",
+    "name": "Primăria Lenauheim",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Lenauheim",
+    "email": "primaria@lenauheim.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-liebling",
+    "name": "Primăria Liebling",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Liebling",
+    "email": "contact@primarialiebling.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-livezile",
+    "name": "Primăria Livezile",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Livezile",
+    "email": "primarialivezile@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-lovrin",
+    "name": "Primăria Lovrin",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Lovrin",
+    "email": "primarialovrin@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-manastiur",
+    "name": "Primăria Mănăștiur",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Mănăștiur",
+    "email": "primariamanastiur@yahoo.com",
+    "notes": "primaria_manastiur@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-margina",
+    "name": "Primăria Margina",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Margina",
+    "email": "primaria_margina@yahoo.com",
+    "notes": "primariamargin@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-masloc",
+    "name": "Primăria Mașloc",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Mașloc",
+    "email": "primaria_masloc@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-moravita",
+    "name": "Primăria Moravița",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Moravița",
+    "email": "prmrmoravita@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-mosnita-noua",
+    "name": "Primăria Moșnița Nouă",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Moșnița Nouă",
+    "email": "office@mosnita.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-nadrag",
+    "name": "Primăria Nădrag",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Nădrag",
+    "email": "nadrag@primarianadrag.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-nitchidorf",
+    "name": "Primăria Nițchidorf",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Nițchidorf",
+    "email": "primar@nitchidorf.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-ohaba-lunga",
+    "name": "Primăria Ohaba Lungă",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Ohaba Lungă",
+    "email": "primariaohabalunga@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-ortisoara",
+    "name": "Primăria Ortișoara",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Ortișoara",
+    "email": "primaria.ortisoara@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-otelec",
+    "name": "Primăria Otelec",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Otelec",
+    "email": "contact@comunaotelec.ro",
+    "notes": "primaria_otelec@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-padureni",
+    "name": "Primăria Pădureni",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Pădureni",
+    "email": "primaria@primaria-padureni.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-parta",
+    "name": "Primăria Parța",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Parța",
+    "email": "office@primariaparta.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-peciu-nou",
+    "name": "Primăria Peciu Nou",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Peciu Nou",
+    "email": "primaria_peciunou@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-periam",
+    "name": "Primăria Periam",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Periam",
+    "email": "office@primatimperiam.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-pesac",
+    "name": "Primăria Pesac",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Pesac",
+    "email": "primariapesac@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-pietroasa",
+    "name": "Primăria Pietroasa",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Pietroasa",
+    "email": "cpietroasa@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-pischia",
+    "name": "Primăria Pișchia",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Pișchia",
+    "email": "primaria@comunapischia.ro",
+    "notes": "primaria_pischia@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-racovita",
+    "name": "Primăria Racovița",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Racovița",
+    "email": "primaria.racovita@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-remetea-mare",
+    "name": "Primăria Remetea Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Remetea Mare",
+    "email": "primaria.remetea_mare@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-sacalaz",
+    "name": "Primăria Săcălaz",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Săcălaz",
+    "email": "office@sacalaz.ro",
+    "notes": "primaria_sacalaz@yahoo.com"
+  },
+  {
+    "id": "timis-primaria-sacosu-turcesc",
+    "name": "Primăria Sacoșu Turcesc",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Sacoșu Turcesc",
+    "email": "info@primariasacos.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-sag",
+    "name": "Primăria Șag",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Șag",
+    "email": "primaria.sag@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-sanandrei",
+    "name": "Primăria Sânandrei",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Sânandrei",
+    "email": "office@primaria-sinandrei.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-sandra",
+    "name": "Primăria Șandra",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Șandra",
+    "email": "primariasandratm@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-sanmihaiu-roman",
+    "name": "Primăria Sânmihaiu Român",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Sânmihaiu Român",
+    "email": "primaria@sanmihaiu.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-sanpetru-mare",
+    "name": "Primăria Sânpetru Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Sânpetru Mare",
+    "email": "primaria.sanpetru_mare@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-saravale",
+    "name": "Primăria Saravale",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Saravale",
+    "email": "primaria@saravale.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-satchinez",
+    "name": "Primăria Satchinez",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Satchinez",
+    "email": "primariasatchinez@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-secas",
+    "name": "Primăria Secaș",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Secaș",
+    "email": "primariasecas@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-stiuca",
+    "name": "Primăria Știuca",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Știuca",
+    "email": "primaria.stiuca@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-teremia-mare",
+    "name": "Primăria Teremia Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Teremia Mare",
+    "email": "primaria.teremia_mare@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-tomesti",
+    "name": "Primăria Tomești",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Tomești",
+    "email": "primaria_tomesti@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-tomnatic",
+    "name": "Primăria Tomnatic",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Tomnatic",
+    "email": "primariatomnatic@gmail.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-topolovatu-mare",
+    "name": "Primăria Topolovățu Mare",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Topolovățu Mare",
+    "email": "primariatopolovatumare@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-tormac",
+    "name": "Primăria Tormac",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Tormac",
+    "email": "primaria@tormac.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-traian-vuia",
+    "name": "Primăria Traian Vuia",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Traian Vuia",
+    "email": "comunatraianvuia@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-uivar",
+    "name": "Primăria Uivar",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Uivar",
+    "email": "primaria_uivar@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-valcani",
+    "name": "Primăria Valcani",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Valcani",
+    "email": "primaria_valcani@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-varias",
+    "name": "Primăria Variaș",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Variaș",
+    "email": "primaria_varias@yahoo.com",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-victor-vlad-delamarina",
+    "name": "Primăria Victor Vlad Delamarina",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Victor Vlad Delamarina",
+    "email": "primaria.vvdelamarina@cjtimis.ro",
+    "notes": ""
+  },
+  {
+    "id": "timis-primaria-voiteg",
+    "name": "Primăria Voiteg",
+    "kind": "primarie",
+    "county": "Timiș",
+    "city": "Voiteg",
+    "email": "primaria@voiteg.ro",
+    "notes": ""
+  }
+]

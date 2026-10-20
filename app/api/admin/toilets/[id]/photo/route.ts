@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { getToilet, updateToilet } from "@/lib/db/toilets";
+import { rejectCrossOrigin } from "@/lib/http";
 import { deleteToiletPhoto, saveToiletPhoto } from "@/lib/photo";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function POST(request: Request, context: Ctx) {
+  const denied = rejectCrossOrigin(request);
+  if (denied) return denied;
   try {
   const { id } = await context.params;
   const existing = await getToilet(id);
@@ -29,7 +32,9 @@ export async function POST(request: Request, context: Ctx) {
   }
 }
 
-export async function DELETE(_request: Request, context: Ctx) {
+export async function DELETE(request: Request, context: Ctx) {
+  const denied = rejectCrossOrigin(request);
+  if (denied) return denied;
   try {
   const { id } = await context.params;
   const existing = await getToilet(id);

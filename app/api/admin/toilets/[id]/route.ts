@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { counties } from "@/lib/counties";
 import { deleteToilet, getToilet, isToiletStatus, isToiletType, updateToilet } from "@/lib/db/toilets";
+import { rejectCrossOrigin } from "@/lib/http";
 import { deleteToiletPhoto } from "@/lib/photo";
 import { isInsideRomaniaEnvelope } from "@/lib/romania";
 import type { ToiletWrite } from "@/lib/supabase/toilets";
@@ -12,6 +13,8 @@ function readString(value: unknown) {
 }
 
 export async function PATCH(request: Request, context: Ctx) {
+  const denied = rejectCrossOrigin(request);
+  if (denied) return denied;
   try {
   const { id } = await context.params;
   const existing = await getToilet(id);
@@ -76,7 +79,9 @@ export async function PATCH(request: Request, context: Ctx) {
   }
 }
 
-export async function DELETE(_request: Request, context: Ctx) {
+export async function DELETE(request: Request, context: Ctx) {
+  const denied = rejectCrossOrigin(request);
+  if (denied) return denied;
   try {
   const { id } = await context.params;
   const removed = await deleteToilet(id);

@@ -1,33 +1,85 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { adminBasePath, isUnderPath } from "@/lib/admin-path";
 import { sessionCookie, verifySessionToken } from "@/lib/auth";
 import { updateSupabaseSession } from "@/lib/supabase/session";
 
-export async function proxy(request: NextRequest) {
-  const response = await updateSupabaseSession(request);
-  const { pathname } = request.nextUrl;
-  const isAdminPath =
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/") ||
-    pathname.startsWith("/api/admin/");
+function copyCookies(from: NextResponse, to: NextResponse) {
+  for (const cookie of from.cookies.getAll()) {
+    to.cookies.set(cookie.name, cookie.value);
+  }
+  return to;
+}
 
-  if (!isAdminPath) return response;
-  if (pathname === "/admin/login" || pathname === "/api/admin/login") return response;
+function noIndex(response: NextResponse) {
+  response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  return response;
+}
+
+function notFound() {
+  return noIndex(
+    new NextResponse("Not Found", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    }),
+  );
+}
+
+export async function proxy(request: NextRequest) {
+  const baseResponse = await updateSupabaseSession(request);
+  const { pathname } = request.nextUrl;
+  const base = adminBasePath();
+
+  if (base !== "/admin" && isUnderPath(pathname, "/admin")) {
+    return notFound();
+  }
+
+  let internalPath = pathname;
+  const onPublicAdmin = isUnderPath(pathname, base);
+  if (onPublicAdmin) {
+    internalPath = `/admin${pathname.slice(base.length)}` || "/admin";
+    if (internalPath === "/admin/") internalPath = "/admin";
+  }
+
+  const isAdminUi = isUnderPath(internalPath, "/admin");
+  const isAdminApi = pathname.startsWith("/api/admin/") || pathname === "/api/geocode/maps";
+  if (!isAdminUi && !isAdminApi) return baseResponse;
+
+  const isLogin =
+    internalPath === "/admin/login" || pathname.startsWith("/api/admin/login");
+
+  async function finish(response: NextResponse) {
+    return noIndex(copyCookies(baseResponse, response));
+  }
+
+  if (isLogin) {
+    if (onPublicAdmin && pathname !== internalPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = internalPath;
+      return finish(NextResponse.rewrite(url, { request }));
+    }
+    return noIndex(baseResponse);
+  }
 
   const ok = await verifySessionToken(request.cookies.get(sessionCookie.name)?.value);
-  if (ok) return response;
+  if (ok) {
+    if (onPublicAdmin && pathname !== internalPath) {
+      const url = request.nextUrl.clone();
+      url.pathname = internalPath;
+      return finish(NextResponse.rewrite(url, { request }));
+    }
+    return noIndex(baseResponse);
+  }
 
   if (pathname.startsWith("/api/")) {
-    return NextResponse.json({ error: "Neautorizat" }, { status: 401 });
+    return noIndex(NextResponse.json({ error: "Neautorizat" }, { status: 401 }));
   }
 
-  const login = new URL("/admin/login", request.url);
+  const login = new URL(request.url);
+  login.pathname = `${base}/login`;
+  login.search = "";
   login.searchParams.set("next", pathname);
-  const redirect = NextResponse.redirect(login);
-  for (const cookie of response.cookies.getAll()) {
-    redirect.cookies.set(cookie.name, cookie.value);
-  }
-  return redirect;
+  return finish(NextResponse.redirect(login));
 }
 
 export const config = {

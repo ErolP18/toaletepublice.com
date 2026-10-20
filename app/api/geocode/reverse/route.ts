@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { reversePlace } from "@/lib/geocode";
+import { clientIp } from "@/lib/http";
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  const limited = rateLimit(`geo:${clientIp(request)}`, 80, 60_000);
+  if (!limited.ok) {
+    return NextResponse.json(rateLimitResponse(limited.retryAt), { status: 429 });
+  }
   const { searchParams } = new URL(request.url);
   const lat = Number(searchParams.get("lat"));
   const lng = Number(searchParams.get("lng"));

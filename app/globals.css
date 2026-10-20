@@ -86,7 +86,8 @@ a {
 .page-nav {
   display: flex;
   align-items: center;
-  gap: 22px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
 }
 
 .page-nav a {
@@ -381,7 +382,8 @@ h2 {
 }
 
 .filters label,
-.add-form label {
+.add-form label,
+.maps-paste {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -392,10 +394,16 @@ h2 {
   color: #6a756e;
 }
 
+.maps-paste {
+  width: 100%;
+  text-align: left;
+}
+
 .filters select,
 .add-form input,
 .add-form select,
-.add-form textarea {
+.add-form textarea,
+.maps-paste input {
   border: 1px solid var(--line);
   background: white;
   border-radius: 4px;
@@ -495,6 +503,14 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+.photo-field.is-over {
+  border-color: var(--teal);
+  background: #eef4f1;
 }
 
 .photo-field input[type="file"] {
@@ -529,6 +545,11 @@ h2 {
   color: #6a756e;
   font-size: 12px;
   font-weight: 400;
+}
+
+.coords a {
+  color: var(--teal);
+  text-decoration: none;
 }
 
 .pin-mini {
@@ -617,8 +638,98 @@ h2 {
   background: #f1d4c4;
 }
 
-.status[data-status="confirmat"] {
+.status[data-status="confirmat"],
+.status[data-status="administreaza"] {
   background: #d5ead8;
+}
+
+.status[data-status="fara_raspuns"] {
+  background: #efe0bf;
+}
+
+.status[data-status="nu_administreaza"] {
+  background: #e4e4e0;
+}
+
+.desk {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  width: min(820px, 100%);
+  margin: 0 auto;
+  padding: 22px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.desk-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 18px;
+  align-items: end;
+}
+
+.desk-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.desk h1 {
+  font-size: 26px;
+}
+
+.desk-form,
+.desk-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.desk-form label,
+.desk-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6a756e;
+}
+
+.desk-form input,
+.desk-form select,
+.desk-form textarea,
+.desk-section input,
+.desk-section textarea {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 4px;
+  padding: 7px 9px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.letter-edit {
+  font-family: inherit;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.desk-section h2 {
+  font-size: 16px;
+  margin-top: 8px;
+}
+
+.admin-nav-slot {
+  min-width: 0;
 }
 
 .admin-table .status {
@@ -815,6 +926,27 @@ h2 {
   min-width: 0;
 }
 
+.admin-tools.desk-filters {
+  grid-template-columns: minmax(0, 1fr) minmax(110px, 150px) minmax(120px, 170px) minmax(120px, 160px);
+}
+
+.admin-table th.sent,
+.admin-table td.sent {
+  width: 44px;
+  text-align: center;
+}
+
+.sent-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sent-check input {
+  width: 16px;
+  height: 16px;
+}
+
 .admin-tools input,
 .admin-tools select,
 .login-form input {
@@ -891,6 +1023,57 @@ h2 {
   flex-direction: column;
   gap: 14px;
   margin-top: 20px;
+}
+
+.login-passkey {
+  width: 100%;
+  margin-top: 20px;
+  min-height: 42px;
+}
+
+.login-alt {
+  margin-top: 18px;
+}
+
+.login-alt summary {
+  cursor: pointer;
+  color: #5c6b67;
+  font-size: 13px;
+}
+
+.login-alt .login-form {
+  margin-top: 12px;
+}
+
+.passkey-list,
+.recovery-codes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.passkey-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #eadfcd;
+}
+
+.recovery-codes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+}
+
+.recovery-codes li {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
 }
 
 .login-form label {
@@ -1014,6 +1197,10 @@ h2 {
 
   .admin-flag {
     display: none;
+  }
+
+  .admin-tools.desk-filters {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .maplibregl-ctrl-scale {
