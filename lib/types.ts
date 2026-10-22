@@ -31,6 +31,9 @@ export type Toilet = {
   status: ToiletStatus;
   notes?: string;
   source?: string;
+  institutionId?: string;
+  sourceRequestId?: string;
+  sourceRespondedAt?: string;
 };
 
 export type ToiletDraft = {

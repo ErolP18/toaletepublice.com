@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Institution, MailOutboxRow, MailTemplate } from "@/lib/desk";
+import { outboxStatusLabels } from "@/lib/desk";
 import { readApi } from "@/lib/client-api";
 import AdminNav from "./AdminNav";
 
 type MailState = {
   configured: boolean;
-  identityReady: boolean;
   from: string;
   senderName: string;
   templates: MailTemplate[];
@@ -31,6 +31,10 @@ export default function MailDesk() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [missing, setMissing] = useState<string[]>([]);
+  const [previousSent, setPreviousSent] = useState(false);
+  const [batchIds, setBatchIds] = useState<string[]>([]);
+  const [batchConfirm, setBatchConfirm] = useState(false);
 
   async function load() {
     const [mailData, list] = await Promise.all([
@@ -54,8 +58,12 @@ export default function MailDesk() {
   useEffect(() => {
     const nextTo = searchParams.get("to") ?? "";
     const nextInstitution = searchParams.get("institution") ?? "";
+    const nextTemplate = searchParams.get("template") ?? "";
+    const ids = (searchParams.get("ids") ?? "").split(",").filter(Boolean);
     if (nextTo) setTo(nextTo);
     if (nextInstitution) setInstitutionId(nextInstitution);
+    if (nextTemplate) setTemplateId(nextTemplate);
+    if (ids.length) setBatchIds(ids);
   }, [searchParams]);
 
   useEffect(() => {
@@ -74,7 +82,12 @@ export default function MailDesk() {
 
   async function preview() {
     setError("");
-    const data = await readApi<{ subject: string; body: string }>(
+    const data = await readApi<{
+      subject: string;
+      body: string;
+      missing?: string[];
+      previousSent?: boolean;
+    }>(
       await fetch("/api/admin/mail/preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,6 +96,8 @@ export default function MailDesk() {
     );
     setSubject(data.subject);
     setBody(data.body);
+    setMissing(data.missing ?? []);
+    setPreviousSent(Boolean(data.previousSent));
     setConfirm(false);
   }
 
@@ -111,10 +126,10 @@ export default function MailDesk() {
         await fetch("/api/admin/mail", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ to, institutionId, templateId, subject, body }),
+          body: JSON.stringify({ to, institutionId, templateId, subject, body, confirm: true }),
         }),
       );
-      setNotice(`Trimis către ${result.to}. Apare și în Sent la Proton.`);
+      setNotice(`SMTP a acceptat mesajul către ${result.to}. Asta nu înseamnă că a fost citit.`);
       setConfirm(false);
       await load();
     } catch (err) {
@@ -150,7 +165,49 @@ export default function MailDesk() {
     }
   }
 
-  const ready = Boolean(to.trim() && subject.trim() && body.trim() && mail?.configured && mail.identityReady);
+  async function sendBatch() {
+    if (!batchConfirm) {
+      setError("Confirmă trimiterea individuală, fără CC/BCC.");
+      return;
+    }
+    const withEmail = institutions.filter((item) => batchIds.includes(item.id) && item.email);
+    if (!withEmail.length) {
+      setError("Nicio instituție cu e-mail valid în lot.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const already = withEmail.filter((item) => item.lastEmailedAt);
+      if (already.length && !window.confirm(`${already.length} au mai primit o solicitare. Continui?`)) {
+        setBusy(false);
+        return;
+      }
+      const result = await readApi<{ results: Array<{ id: string; ok: boolean; error?: string }> }>(
+        await fetch("/api/admin/mail/batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ids: withEmail.slice(0, 12).map((item) => item.id),
+            templateId,
+            confirm: true,
+          }),
+        }),
+      );
+      const failed = result.results.filter((item) => !item.ok).length;
+      const ok = result.results.filter((item) => item.ok).length;
+      setNotice(`${ok} acceptate de SMTP, ${failed} cu eroare. Maximum 12 pe rundă, fiecare mesaj separat.`);
+      setBatchConfirm(false);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nu am putut trimite lotul.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const ready = Boolean(to.trim() && subject.trim() && body.trim() && mail?.configured);
+  const batchList = institutions.filter((item) => batchIds.includes(item.id));
 
   const institutionOptions = useMemo(
     () =>
@@ -169,7 +226,7 @@ export default function MailDesk() {
           <div>
             <h1>Mail</h1>
             <p className="hint">
-              Bagi adresa instituției și pleacă cererea 544/2001 prin Proton. Doar tu vezi pagina.
+              Un mesaj per instituție, prin Proton SMTP. Acceptarea serverului nu e confirmare de lectură.
             </p>
           </div>
         </header>
@@ -182,17 +239,49 @@ export default function MailDesk() {
             SMTP_USER, SMTP_PASS, SMTP_FROM în .env.local (și Coolify).
           </p>
         ) : null}
-        {mail && mail.configured && !mail.identityReady ? (
-          <p className="banner warn">
-            Legea 544 cere identitatea solicitantului. Completează MAIL_SENDER_NAME și
-            MAIL_SENDER_EMAIL.
-          </p>
-        ) : null}
         {mail?.from ? (
           <p className="stats-line">
             De la {mail.senderName ? `${mail.senderName} · ` : ""}
             {mail.from}
           </p>
+        ) : null}
+
+        {batchList.length ? (
+          <section className="desk-section">
+            <h2>Lot: {batchList.length} instituții</h2>
+            <p className="hint">
+              Fără e-mail: {batchList.filter((item) => !item.email).length}. Se trimit doar adresele
+              valide, fiecare separat, maxim 12 / rundă.
+            </p>
+            <ul className="attention-list">
+              {batchList.map((item) => (
+                <li key={item.id}>
+                  {item.name} — {item.email || "fără e-mail"}
+                  {item.lastEmailedAt ? " · mai are o trimitere" : ""}
+                </li>
+              ))}
+            </ul>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={batchConfirm}
+                onChange={(event) => setBatchConfirm(event.target.checked)}
+              />
+              Trimit mesaje individuale, fără CC sau BCC
+            </label>
+            <button type="button" className="primary" disabled={busy} onClick={() => void sendBatch()}>
+              Trimite lotul
+            </button>
+          </section>
+        ) : null}
+
+        {missing.length ? (
+          <p className="banner warn">
+            Variabile fără valoare, omise din text: {missing.join(", ")}.
+          </p>
+        ) : null}
+        {previousSent ? (
+          <p className="banner warn">Această instituție mai are o solicitare notată.</p>
         ) : null}
 
         <form className="desk-form" onSubmit={(event) => void send(event)}>
@@ -261,8 +350,8 @@ export default function MailDesk() {
         <section className="desk-section">
           <h2>Șablonul folosit des</h2>
           <p className="hint">
-            Poți folosi {"{{institutie}}"}, {"{{solicitant_nume}}"}, {"{{solicitant_adresa}}"},{" "}
-            {"{{solicitant_email}}"}, {"{{solicitant_telefon}}"}, {"{{data}}"}.
+            Variabile: {"{{institutie}}"}, {"{{localitate}}"}, {"{{judet}}"}, {"{{data_solicitarii}}"},{" "}
+            {"{{numar_inregistrare}}"}. Cele goale nu rămân în text. Scrisoarea 544 nu se rescrie.
           </p>
           <label>
             Subiect șablon
@@ -294,6 +383,7 @@ export default function MailDesk() {
                 <tr>
                   <th>Către</th>
                   <th>Subiect</th>
+                  <th>Status SMTP</th>
                   <th>Data</th>
                 </tr>
               </thead>
@@ -302,6 +392,14 @@ export default function MailDesk() {
                   <tr key={row.id}>
                     <td>{row.toEmail}</td>
                     <td>{row.subject}</td>
+                    <td>
+                      <em>
+                        {outboxStatusLabels[row.status] || "Acceptat de SMTP"}
+                        {row.templateId ? ` · ${row.templateId}` : ""}
+                        {row.messageId ? ` · ${row.messageId}` : ""}
+                        {row.error ? ` — ${row.error}` : ""}
+                      </em>
+                    </td>
                     <td>
                       <em>{new Date(row.createdAt).toLocaleString("ro-RO")}</em>
                     </td>

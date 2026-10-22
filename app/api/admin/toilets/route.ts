@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     status: (body.status as string) || "confirmat",
     notes: readString(body.notes) || null,
     source: readString(body.source) || "admin",
+    institutionId: readString(body.institutionId) || null,
     createdAt: now,
     updatedAt: now,
   });

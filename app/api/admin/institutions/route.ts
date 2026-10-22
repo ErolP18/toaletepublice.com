@@ -3,6 +3,7 @@ import { counties } from "@/lib/counties";
 import {
   isInstitutionKind,
   isInstitutionResponse,
+  isRequestStatus,
 } from "@/lib/desk";
 import { rejectCrossOrigin } from "@/lib/http";
 import { isEmail, normalizeEmail } from "@/lib/mail/validate";
@@ -56,7 +57,9 @@ export async function POST(request: Request) {
       county: county || null,
       city: readString(body.city) || null,
       email: email || null,
+      website: readString(body.website) || null,
       responseStatus,
+      requestStatus: isRequestStatus(body.requestStatus) ? body.requestStatus : "netrimisa",
       toiletsSummary: readString(body.toiletsSummary) || null,
       notes: readString(body.notes) || null,
       requestedAt: responseStatus === "fara_raspuns" ? now : readString(body.requestedAt) || now,

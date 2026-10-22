@@ -17,6 +17,20 @@ export const metadata: Metadata = {
   applicationName: "toaletepublice.com",
   alternates: { canonical: "/" },
   icons: { icon: "/icon.svg" },
+  openGraph: {
+    title: "Toalete Publice — Harta României",
+    description: "Hartă civică, gratuită, a toaletelor publice din România.",
+    url: "https://toaletepublice.com",
+    siteName: "toaletepublice.com",
+    locale: "ro_RO",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Toalete Publice — Harta României",
+    description: "Hartă civică, gratuită, a toaletelor publice din România.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {

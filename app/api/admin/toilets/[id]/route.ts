@@ -60,6 +60,11 @@ export async function PATCH(request: Request, context: Ctx) {
   }
   if ("notes" in body) patch.notes = readString(body.notes) || null;
   if ("source" in body) patch.source = readString(body.source) || null;
+  if ("institutionId" in body) patch.institutionId = readString(body.institutionId) || null;
+  if ("sourceRequestId" in body) patch.sourceRequestId = readString(body.sourceRequestId) || null;
+  if ("sourceRespondedAt" in body) {
+    patch.sourceRespondedAt = readString(body.sourceRespondedAt) || null;
+  }
   if ("accessible" in body) patch.accessible = Boolean(body.accessible);
   if ("type" in body) {
     if (!isToiletType(body.type)) return NextResponse.json({ error: "Tip invalid." }, { status: 400 });

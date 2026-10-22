@@ -1,4 +1,4 @@
-import { DEFAULT_TEMPLATE } from "@/lib/mail/template";
+import { DEFAULT_TEMPLATE, EXTRA_TEMPLATES } from "@/lib/mail/template";
 import { isEmail } from "@/lib/mail/validate";
 import type {
   Institution,
@@ -6,7 +6,11 @@ import type {
   InstitutionResponse,
   MailOutboxRow,
   MailTemplate,
+  OutboxStatus,
+  RequestStatus,
+  SendChannel,
 } from "@/lib/desk";
+import { deriveRequestStatus } from "@/lib/desk";
 import { createSupabaseAdminClient } from "./admin";
 
 type InstitutionRow = {
@@ -16,7 +20,9 @@ type InstitutionRow = {
   county: string | null;
   city: string | null;
   email: string | null;
+  website: string | null;
   response_status: string;
+  request_status: string | null;
   toilets_summary: string | null;
   notes: string | null;
   requested_at: string | null;
@@ -41,6 +47,11 @@ type OutboxRow = {
   subject: string;
   template_id: string | null;
   created_at: string;
+  status?: string | null;
+  error?: string | null;
+  message_id?: string | null;
+  channel?: string | null;
+  request_id?: string | null;
 };
 
 function throwIfError(error: { message: string; code?: string } | null, table: string) {
@@ -60,7 +71,13 @@ function rowToInstitution(row: InstitutionRow): Institution {
     county: row.county ?? "",
     city: row.city ?? "",
     email: row.email ?? "",
+    website: row.website ?? "",
     responseStatus: row.response_status as InstitutionResponse,
+    requestStatus: deriveRequestStatus({
+      requestStatus: row.request_status,
+      lastEmailedAt: row.last_emailed_at,
+      responseStatus: row.response_status,
+    }),
     toiletsSummary: row.toilets_summary ?? "",
     notes: row.notes ?? "",
     requestedAt: row.requested_at,
@@ -79,6 +96,8 @@ export type InstitutionWrite = {
   city?: string | null;
   email?: string | null;
   responseStatus: InstitutionResponse;
+  website?: string | null;
+  requestStatus?: RequestStatus;
   toiletsSummary?: string | null;
   notes?: string | null;
   requestedAt?: string | null;
@@ -94,7 +113,9 @@ function writeInstitution(input: Partial<InstitutionWrite>) {
   if ("county" in input) row.county = input.county || null;
   if ("city" in input) row.city = input.city || null;
   if ("email" in input) row.email = input.email || null;
+  if ("website" in input) row.website = input.website || null;
   if (input.responseStatus !== undefined) row.response_status = input.responseStatus;
+  if (input.requestStatus !== undefined) row.request_status = input.requestStatus;
   if ("toiletsSummary" in input) row.toilets_summary = input.toiletsSummary || null;
   if ("notes" in input) row.notes = input.notes || null;
   if ("requestedAt" in input) row.requested_at = input.requestedAt || null;
@@ -120,17 +141,43 @@ export async function getInstitution(id: string) {
   return data ? rowToInstitution(data as InstitutionRow) : null;
 }
 
-export async function createInstitution(input: InstitutionWrite) {
+function isMissingColumn(error: { message: string } | null, column: string) {
+  const message = error?.message || "";
+  return message.includes(column) || message.includes("schema cache");
+}
+
+async function writeInstitutionRow(
+  action: "insert" | "update",
+  row: Record<string, unknown>,
+  id?: string,
+) {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("institutions").insert(writeInstitution(input));
-  throwIfError(error, "institutions");
+  const first =
+    action === "insert"
+      ? await supabase.from("institutions").insert(row)
+      : await supabase.from("institutions").update(row).eq("id", id);
+  if (!first.error) return;
+  if (isMissingColumn(first.error, "request_status") || isMissingColumn(first.error, "website")) {
+    const fallback = { ...row };
+    delete fallback.request_status;
+    delete fallback.website;
+    const retry =
+      action === "insert"
+        ? await supabase.from("institutions").insert(fallback)
+        : await supabase.from("institutions").update(fallback).eq("id", id);
+    throwIfError(retry.error, "institutions");
+    return;
+  }
+  throwIfError(first.error, "institutions");
+}
+
+export async function createInstitution(input: InstitutionWrite) {
+  await writeInstitutionRow("insert", writeInstitution(input));
   return getInstitution(input.id);
 }
 
 export async function updateInstitution(id: string, patch: Partial<InstitutionWrite>) {
-  const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("institutions").update(writeInstitution(patch)).eq("id", id);
-  throwIfError(error, "institutions");
+  await writeInstitutionRow("update", writeInstitution(patch), id);
   return getInstitution(id);
 }
 
@@ -256,8 +303,26 @@ export async function ensureDefaultTemplate() {
   return saved ? rowToTemplate(saved as TemplateRow) : null;
 }
 
+export async function ensureExtraTemplates() {
+  const supabase = createSupabaseAdminClient();
+  for (const template of EXTRA_TEMPLATES) {
+    const { data, error } = await supabase.from("mail_templates").select("id").eq("id", template.id).maybeSingle();
+    throwIfError(error, "mail_templates");
+    if (data) continue;
+    const subject = template.subject || "Solicitare — toaletepublice.com";
+    const { error: insertError } = await supabase.from("mail_templates").insert({
+      id: template.id,
+      name: template.name,
+      subject,
+      body: template.body,
+    });
+    throwIfError(insertError, "mail_templates");
+  }
+}
+
 export async function listTemplates() {
   await ensureDefaultTemplate();
+  await ensureExtraTemplates();
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.from("mail_templates").select("*").order("name");
   throwIfError(error, "mail_templates");
@@ -291,19 +356,41 @@ export async function logMail(input: {
   toEmail: string;
   subject: string;
   templateId?: string | null;
+  status?: OutboxStatus;
+  error?: string | null;
+  messageId?: string | null;
+  channel?: SendChannel;
+  requestId?: string | null;
+  bodyPreview?: string | null;
 }) {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("mail_outbox").insert({
+  const full = {
     id: input.id,
     institution_id: input.institutionId || null,
     to_email: input.toEmail,
     subject: input.subject,
     template_id: input.templateId || null,
-  });
-  throwIfError(error, "mail_outbox");
+    status: input.status || "accepted",
+    error: input.error || null,
+    message_id: input.messageId || null,
+    channel: input.channel || "smtp",
+    request_id: input.requestId || null,
+    body_preview: input.bodyPreview?.slice(0, 400) || null,
+  };
+  const { error } = await supabase.from("mail_outbox").insert(full);
+  if (!error) return;
+  const fallback = {
+    id: full.id,
+    institution_id: full.institution_id,
+    to_email: full.to_email,
+    subject: full.subject,
+    template_id: full.template_id,
+  };
+  const retry = await supabase.from("mail_outbox").insert(fallback);
+  throwIfError(retry.error, "mail_outbox");
 }
 
-export async function listOutbox(limit = 30) {
+export async function listOutbox(limit = 80) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("mail_outbox")
@@ -319,6 +406,11 @@ export async function listOutbox(limit = 30) {
       subject: row.subject,
       templateId: row.template_id,
       createdAt: row.created_at,
+      status: (row.status as OutboxStatus) || "accepted",
+      error: row.error ?? "",
+      messageId: row.message_id ?? "",
+      channel: (row.channel as SendChannel) || "smtp",
+      requestId: row.request_id ?? null,
     }),
   );
 }

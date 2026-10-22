@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { counties } from "@/lib/counties";
-import { isInstitutionKind, isInstitutionResponse } from "@/lib/desk";
+import { isInstitutionKind, isInstitutionResponse, isRequestStatus } from "@/lib/desk";
 import { rejectCrossOrigin } from "@/lib/http";
 import { isEmail, normalizeEmail } from "@/lib/mail/validate";
+import {
+  listEvents,
+  listReplies,
+  listRequests,
+} from "@/lib/supabase/correspondence";
 import {
   deleteInstitution,
   getInstitution,
@@ -14,6 +19,23 @@ type Ctx = { params: Promise<{ id: string }> };
 
 function readString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+export async function GET(_request: Request, context: Ctx) {
+  try {
+    const { id } = await context.params;
+    const item = await getInstitution(id);
+    if (!item) return NextResponse.json({ error: "Nu există." }, { status: 404 });
+    const [requests, replies, events] = await Promise.all([
+      listRequests(id).catch(() => []),
+      listReplies(id).catch(() => []),
+      listEvents(id).catch(() => []),
+    ]);
+    return NextResponse.json({ ...item, requests, replies, events });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Nu am putut citi instituția.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 }
 
 export async function PATCH(request: Request, context: Ctx) {
@@ -60,6 +82,12 @@ export async function PATCH(request: Request, context: Ctx) {
       patch.county = county || null;
     }
     if ("city" in body) patch.city = readString(body.city) || null;
+    if ("requestStatus" in body) {
+      if (!isRequestStatus(body.requestStatus)) {
+        return NextResponse.json({ error: "Status de solicitare invalid." }, { status: 400 });
+      }
+      patch.requestStatus = body.requestStatus;
+    }
     if ("email" in body) {
       const email = normalizeEmail(readString(body.email));
       if (email && !isEmail(email)) {
@@ -67,6 +95,7 @@ export async function PATCH(request: Request, context: Ctx) {
       }
       patch.email = email || null;
     }
+    if ("website" in body) patch.website = readString(body.website) || null;
     if ("toiletsSummary" in body) patch.toiletsSummary = readString(body.toiletsSummary) || null;
     if ("notes" in body) patch.notes = readString(body.notes) || null;
     if ("mailed" in body || "lastEmailedAt" in body) {

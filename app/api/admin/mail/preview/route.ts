@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { rejectCrossOrigin } from "@/lib/http";
-import { mailIdentity } from "@/lib/mail/identity";
-import { renderTemplate, todayRo } from "@/lib/mail/template";
+import { renderTemplate, missingTemplateVars } from "@/lib/mail/template";
+import { institutionVars } from "@/lib/mail/vars";
 import { getInstitution, getTemplate } from "@/lib/supabase/desk";
 
 export async function POST(request: Request) {
@@ -22,19 +22,19 @@ export async function POST(request: Request) {
     ]);
     if (!template) return NextResponse.json({ error: "Șablonul nu există." }, { status: 404 });
 
-    const identity = mailIdentity();
-    const vars = {
-      institutie: institution?.name || to || "…",
-      solicitant_nume: identity.name || "…",
-      solicitant_adresa: identity.address || "…",
-      solicitant_email: identity.email || "…",
-      solicitant_telefon: identity.phone ? `, telefon ${identity.phone}` : "",
-      data: todayRo(),
-    };
+    const vars = institutionVars(institution, {
+      to,
+      sentAt: institution?.lastEmailedAt,
+      registration: typeof body.registration === "string" ? body.registration : "",
+    });
+    const missing = missingTemplateVars(`${template.subject}\n${template.body}`, vars);
 
     return NextResponse.json({
       subject: renderTemplate(template.subject, vars),
       body: renderTemplate(template.body, vars),
+      missing,
+      previousSent: Boolean(institution?.lastEmailedAt),
+      lastEmailedAt: institution?.lastEmailedAt ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nu am putut pregăti mesajul.";

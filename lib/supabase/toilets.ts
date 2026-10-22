@@ -18,6 +18,9 @@ type ToiletRow = {
   status: string;
   notes: string | null;
   source: string | null;
+  institution_id?: string | null;
+  source_request_id?: string | null;
+  source_responded_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -39,6 +42,9 @@ export type ToiletWrite = {
   status: string;
   notes?: string | null;
   source?: string | null;
+  institutionId?: string | null;
+  sourceRequestId?: string | null;
+  sourceRespondedAt?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -61,6 +67,9 @@ function rowToToilet(row: ToiletRow): Toilet {
     status: row.status as Toilet["status"],
     notes: row.notes ?? undefined,
     source: row.source ?? undefined,
+    institutionId: row.institution_id ?? undefined,
+    sourceRequestId: row.source_request_id ?? undefined,
+    sourceRespondedAt: row.source_responded_at ?? undefined,
   };
 }
 
@@ -82,6 +91,9 @@ function writeToRow(input: Partial<ToiletWrite>) {
   if (input.status !== undefined) row.status = input.status;
   if (input.notes !== undefined) row.notes = input.notes || null;
   if (input.source !== undefined) row.source = input.source || null;
+  if ("institutionId" in input) row.institution_id = input.institutionId || null;
+  if ("sourceRequestId" in input) row.source_request_id = input.sourceRequestId || null;
+  if ("sourceRespondedAt" in input) row.source_responded_at = input.sourceRespondedAt || null;
   row.updated_at = (input.updatedAt ?? new Date()).toISOString();
   if (input.createdAt) row.created_at = input.createdAt.toISOString();
   return row;
@@ -101,7 +113,13 @@ export async function supabaseListPublic() {
     .order("city")
     .order("name");
   throwIfError(error);
-  return ((data ?? []) as ToiletRow[]).map(rowToToilet);
+  return ((data ?? []) as ToiletRow[]).map((row) => {
+    const toilet = rowToToilet(row);
+    delete toilet.institutionId;
+    delete toilet.sourceRequestId;
+    delete toilet.sourceRespondedAt;
+    return toilet;
+  });
 }
 
 export async function supabaseListAll() {
@@ -123,24 +141,52 @@ export async function supabaseGet(id: string) {
   return data ? rowToToilet(data as ToiletRow) : null;
 }
 
+function stripSourceColumns(row: Record<string, unknown>) {
+  const next = { ...row };
+  delete next.institution_id;
+  delete next.source_request_id;
+  delete next.source_responded_at;
+  return next;
+}
+
+function isMissingToiletColumn(error: { message: string } | null) {
+  const message = error?.message || "";
+  return (
+    message.includes("institution_id") ||
+    message.includes("source_request_id") ||
+    message.includes("source_responded_at") ||
+    message.includes("schema cache")
+  );
+}
+
 export async function supabaseCreate(input: ToiletWrite) {
   const supabase = createSupabaseAdminClient();
   const now = new Date();
-  const { error } = await supabase.from("toilets").insert(
-    writeToRow({
-      ...input,
-      createdAt: input.createdAt ?? now,
-      updatedAt: input.updatedAt ?? now,
-    }),
-  );
-  throwIfError(error);
+  const row = writeToRow({
+    ...input,
+    createdAt: input.createdAt ?? now,
+    updatedAt: input.updatedAt ?? now,
+  });
+  const first = await supabase.from("toilets").insert(row);
+  if (first.error && isMissingToiletColumn(first.error)) {
+    const retry = await supabase.from("toilets").insert(stripSourceColumns(row));
+    throwIfError(retry.error);
+  } else {
+    throwIfError(first.error);
+  }
   return supabaseGet(input.id);
 }
 
 export async function supabaseUpdate(id: string, patch: Partial<ToiletWrite>) {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("toilets").update(writeToRow(patch)).eq("id", id);
-  throwIfError(error);
+  const row = writeToRow(patch);
+  const first = await supabase.from("toilets").update(row).eq("id", id);
+  if (first.error && isMissingToiletColumn(first.error)) {
+    const retry = await supabase.from("toilets").update(stripSourceColumns(row)).eq("id", id);
+    throwIfError(retry.error);
+  } else {
+    throwIfError(first.error);
+  }
   return supabaseGet(id);
 }
 

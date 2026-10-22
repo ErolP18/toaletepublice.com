@@ -69,6 +69,7 @@ export default function AdminApp() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([]);
   const [styleId] = useState<MapStyleId>("liberty");
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(
     null,
@@ -85,6 +86,12 @@ export default function AdminApp() {
     load()
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
+    fetch("/api/admin/institutions")
+      .then((response) => response.json())
+      .then((data: Array<{ id: string; name: string }>) => {
+        if (Array.isArray(data)) setInstitutions(data.map((item) => ({ id: item.id, name: item.name })));
+      })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -466,6 +473,7 @@ export default function AdminApp() {
           ) : edit ? (
             <EditForm
               toilet={edit}
+              institutions={institutions}
               geocoding={geocoding}
               busy={busy}
               photoFile={photoFile}
@@ -641,6 +649,7 @@ function AdminForm({
 
 function EditForm({
   toilet,
+  institutions,
   geocoding,
   busy,
   photoFile,
@@ -653,6 +662,7 @@ function EditForm({
   onRemovePhoto,
 }: {
   toilet: Toilet;
+  institutions: Array<{ id: string; name: string }>;
   geocoding: boolean;
   busy: boolean;
   photoFile: File | null;
@@ -712,6 +722,26 @@ function EditForm({
           onChange={(event) => update({ source: event.target.value })}
         />
       </label>
+      <label>
+        Instituție sursă (doar intern)
+        <select
+          value={toilet.institutionId ?? ""}
+          onChange={(event) => update({ institutionId: event.target.value || undefined })}
+        >
+          <option value="">—</option>
+          {institutions.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {toilet.sourceRespondedAt ? (
+        <p className="hint">
+          Informații din răspuns: {new Date(toilet.sourceRespondedAt).toLocaleDateString("ro-RO")}
+          {toilet.sourceRequestId ? ` · cerere ${toilet.sourceRequestId.slice(0, 8)}` : ""}
+        </p>
+      ) : null}
       <div className="form-actions">
         <button type="submit" className="primary" disabled={busy}>
           {busy ? "Salvez…" : "Salvează"}

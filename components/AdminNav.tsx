@@ -9,7 +9,7 @@ export default function AdminNav({
   children,
   actions,
 }: {
-  current: "toilets" | "institutions" | "mail";
+  current: "desk" | "toilets" | "institutions" | "mail";
   children?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
@@ -17,6 +17,9 @@ export default function AdminNav({
     <header className="topbar admin-topbar">
       <nav className="page-nav">
         <Link href="/">Hartă</Link>
+        <Link href={adminHref("/panou")} aria-current={current === "desk" ? "page" : undefined}>
+          Panou
+        </Link>
         <Link href={adminHref()} aria-current={current === "toilets" ? "page" : undefined}>
           Toalete
         </Link>

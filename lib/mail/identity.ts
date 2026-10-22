@@ -10,11 +10,6 @@ export function mailIdentity() {
   return { name, address, email, phone };
 }
 
-export function mailIdentityReady() {
-  const { name, email } = mailIdentity();
-  return Boolean(name && email);
-}
-
 export function smtpConfigured() {
   return Boolean(read("SMTP_HOST") && read("SMTP_USER") && read("SMTP_PASS") && (read("SMTP_FROM") || read("SMTP_USER")));
 }

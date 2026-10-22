@@ -119,3 +119,152 @@ create table if not exists public.admin_magic_links (
 );
 
 alter table public.admin_magic_links enable row level security;
+
+-- Extinderi aditive. Nu șterg date. Rulează din nou tot fișierul după un pull.
+
+alter table public.institutions add column if not exists website text;
+alter table public.institutions add column if not exists request_status text;
+
+alter table public.institutions drop constraint if exists institutions_status_check;
+alter table public.institutions add constraint institutions_status_check check (
+  response_status in (
+    'fara_raspuns',
+    'administreaza',
+    'nu_administreaza',
+    'redirectionare',
+    'incomplet',
+    'altul'
+  )
+);
+
+alter table public.institutions drop constraint if exists institutions_request_status_check;
+alter table public.institutions add constraint institutions_request_status_check check (
+  request_status is null or request_status in (
+    'netrimisa',
+    'pregatita',
+    'trimisa',
+    'eroare',
+    'in_asteptare',
+    'raspuns_primit',
+    'necesita_revenire',
+    'inchisa'
+  )
+);
+
+update public.institutions
+set request_status = case
+  when response_status in ('administreaza', 'nu_administreaza', 'redirectionare', 'incomplet', 'altul')
+    then 'raspuns_primit'
+  when last_emailed_at is not null then 'in_asteptare'
+  else 'netrimisa'
+end
+where request_status is null;
+
+alter table public.institutions alter column request_status set default 'netrimisa';
+
+create index if not exists institutions_request_idx on public.institutions (request_status);
+
+alter table public.toilets add column if not exists institution_id text references public.institutions (id) on delete set null;
+alter table public.toilets add column if not exists source_request_id text;
+alter table public.toilets add column if not exists source_responded_at timestamptz;
+
+create index if not exists toilets_institution_idx on public.toilets (institution_id);
+
+alter table public.mail_outbox add column if not exists status text default 'accepted';
+alter table public.mail_outbox add column if not exists error text;
+alter table public.mail_outbox add column if not exists message_id text;
+alter table public.mail_outbox add column if not exists channel text default 'smtp';
+alter table public.mail_outbox add column if not exists request_id text;
+alter table public.mail_outbox add column if not exists body_preview text;
+
+create table if not exists public.correspondence_requests (
+  id text primary key,
+  institution_id text not null references public.institutions (id) on delete cascade,
+  channel text not null default 'smtp',
+  template_id text,
+  subject text,
+  body text,
+  to_email text,
+  status text not null default 'pregatita',
+  sent_at timestamptz,
+  due_at timestamptz,
+  extended_until timestamptz,
+  registration_number text,
+  notes text,
+  outbox_id text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint correspondence_channel_check check (channel in ('smtp', 'proton_manual', 'mailto')),
+  constraint correspondence_request_status_check check (
+    status in (
+      'netrimisa',
+      'pregatita',
+      'trimisa',
+      'eroare',
+      'in_asteptare',
+      'raspuns_primit',
+      'necesita_revenire',
+      'inchisa'
+    )
+  )
+);
+
+create index if not exists correspondence_requests_inst_idx on public.correspondence_requests (institution_id, created_at desc);
+
+alter table public.correspondence_requests enable row level security;
+
+create table if not exists public.correspondence_events (
+  id text primary key,
+  institution_id text references public.institutions (id) on delete cascade,
+  request_id text references public.correspondence_requests (id) on delete set null,
+  kind text not null,
+  detail text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists correspondence_events_inst_idx on public.correspondence_events (institution_id, created_at desc);
+
+alter table public.correspondence_events enable row level security;
+
+create table if not exists public.correspondence_replies (
+  id text primary key,
+  institution_id text not null references public.institutions (id) on delete cascade,
+  request_id text references public.correspondence_requests (id) on delete set null,
+  received_at timestamptz,
+  registration_number text,
+  response_type text not null default 'fara_raspuns',
+  summary text,
+  notes text,
+  processing text not null default 'neprocesat',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint correspondence_reply_type_check check (
+    response_type in (
+      'fara_raspuns',
+      'administreaza',
+      'nu_administreaza',
+      'redirectionare',
+      'incomplet',
+      'altul'
+    )
+  ),
+  constraint correspondence_reply_processing_check check (
+    processing in ('neprocesat', 'procesat', 'necesita_clarificari')
+  )
+);
+
+create index if not exists correspondence_replies_inst_idx on public.correspondence_replies (institution_id, created_at desc);
+
+alter table public.correspondence_replies enable row level security;
+
+create table if not exists public.correspondence_files (
+  id text primary key,
+  reply_id text not null references public.correspondence_replies (id) on delete cascade,
+  filename text not null,
+  mime text not null,
+  byte_size integer not null,
+  storage_key text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.correspondence_files enable row level security;
