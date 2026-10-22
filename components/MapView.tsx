@@ -75,11 +75,13 @@ export default function MapView({
   const onMapClickRef = useRef(onMapClick);
   const onFlyCompleteRef = useRef(onFlyComplete);
   const addModeRef = useRef(addMode);
+  const flyToRef = useRef(flyTo);
 
   onSelectRef.current = onSelect;
   onMapClickRef.current = onMapClick;
   onFlyCompleteRef.current = onFlyComplete;
   addModeRef.current = addMode;
+  flyToRef.current = flyTo;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -111,6 +113,15 @@ export default function MapView({
     });
     map.once("load", () => {
       collapseAttribution(map);
+      const target = flyToRef.current;
+      if (target) {
+        map.jumpTo({
+          center: [target.lng, target.lat],
+          zoom: target.zoom ?? 16,
+        });
+        onFlyCompleteRef.current();
+        return;
+      }
       map.fitBounds(ROMANIA_BOUNDS, {
         padding: { top: 36, bottom: 40, left: 28, right: 28 },
         duration: 0,
@@ -177,7 +188,7 @@ export default function MapView({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !flyTo) return;
+    if (!map || !flyTo || !map.loaded()) return;
     map.flyTo({
       center: [flyTo.lng, flyTo.lat],
       zoom: flyTo.zoom ?? 16,

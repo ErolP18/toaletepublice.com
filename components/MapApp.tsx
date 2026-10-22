@@ -1,12 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Accessibility, Crosshair, List, X } from "lucide-react";
 import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
 import { findCity, isInsideRomaniaEnvelope, type MapStyleId } from "@/lib/romania";
 import type { SearchSuggestion } from "@/lib/suggest";
+import { parseToiletPath, toiletPath } from "@/lib/toilet-url";
 import {
   groupToiletsByLocality,
   matchesToilet,
@@ -23,16 +24,28 @@ const MapView = dynamic(() => import("@/components/MapView"), {
   loading: () => <div className="map-canvas map-skeleton" />,
 });
 
-export default function MapApp({ initialToilets = [] }: { initialToilets?: Toilet[] }) {
+export default function MapApp({
+  initialToilets = [],
+  initialSelectedId = null,
+}: {
+  initialToilets?: Toilet[];
+  initialSelectedId?: string | null;
+}) {
   const [toilets] = useState<Toilet[]>(() => sortToilets(initialToilets));
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [listOpen, setListOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    if (initialSelectedId && initialToilets.some((toilet) => toilet.id === initialSelectedId)) {
+      return initialSelectedId;
+    }
+    return null;
+  });
+  const [listOpen, setListOpen] = useState(() => Boolean(initialSelectedId));
   const [locateError, setLocateError] = useState("");
   const [styleId] = useState<MapStyleId>("liberty");
-  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(
-    null,
-  );
+  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(() => {
+    const toilet = initialToilets.find((item) => item.id === initialSelectedId);
+    return toilet ? { lat: toilet.lat, lng: toilet.lng, zoom: 17 } : null;
+  });
 
   const visible = useMemo(
     () => toilets.filter((toilet) => matchesToilet(toilet, query)),
@@ -49,6 +62,30 @@ export default function MapApp({ initialToilets = [] }: { initialToilets?: Toile
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path !== "/" && !parseToiletPath(path)) return;
+    const next = selectedId ? toiletPath(selectedId) : "/";
+    if (path === next) return;
+    window.history.replaceState(window.history.state, "", next);
+  }, [selectedId]);
+
+  useEffect(() => {
+    function onPopState() {
+      const id = parseToiletPath(window.location.pathname);
+      const toilet = id ? toilets.find((item) => item.id === id) : undefined;
+      if (!toilet) {
+        setSelectedId(null);
+        return;
+      }
+      setSelectedId(toilet.id);
+      setFlyTo({ lat: toilet.lat, lng: toilet.lng, zoom: 17 });
+      setListOpen(true);
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [toilets]);
 
   function locateMe() {
     setLocateError("");
@@ -308,6 +345,7 @@ function ToiletDetails({ toilet, onBack }: { toilet: Toilet; onBack: () => void 
         </div>
       </dl>
       {toilet.notes ? <p className="notes">{toilet.notes}</p> : null}
+      <ShareLink toilet={toilet} />
       <a
         className="primary block"
         href={googleMapsPlaceUrl(toilet.lat, toilet.lng, toilet.source)}
@@ -317,5 +355,75 @@ function ToiletDetails({ toilet, onBack }: { toilet: Toilet; onBack: () => void 
         Deschide în Google Maps
       </a>
     </article>
+  );
+}
+
+function ShareLink({ toilet }: { toilet: Toilet }) {
+  const [copied, setCopied] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+  const [display, setDisplay] = useState(`toaletepublice.com${toiletPath(toilet.id)}`);
+  const timer = useRef(0);
+
+  useEffect(() => {
+    setCanShare(typeof navigator.share === "function");
+    setDisplay(`${window.location.host}${toiletPath(toilet.id)}`);
+    return () => window.clearTimeout(timer.current);
+  }, [toilet.id]);
+
+  function shareUrl() {
+    return `${window.location.origin}${toiletPath(toilet.id)}`;
+  }
+
+  async function copyLink() {
+    const url = shareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const field = document.createElement("textarea");
+      field.value = url;
+      field.setAttribute("readonly", "");
+      field.style.position = "fixed";
+      field.style.left = "-9999px";
+      document.body.appendChild(field);
+      field.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(field);
+      if (!ok) return;
+    }
+    setCopied(true);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function shareLink() {
+    const url = shareUrl();
+    const title = `${toilet.name}, ${toilet.city}`;
+    try {
+      await navigator.share({ title, text: title, url });
+    } catch {
+      // anulat de utilizator
+    }
+  }
+
+  return (
+    <div className="share-box">
+      <input
+        className="share-url"
+        readOnly
+        value={display}
+        aria-label="Link către această toaletă"
+        onFocus={(event) => event.currentTarget.select()}
+      />
+      <div className="row">
+        <button type="button" className="ghost" onClick={() => void copyLink()}>
+          {copied ? "Copiat" : "Copiază linkul"}
+        </button>
+        {canShare ? (
+          <button type="button" className="ghost" onClick={() => void shareLink()}>
+            Trimite
+          </button>
+        ) : null}
+      </div>
+    </div>
   );
 }

@@ -9,5 +9,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [...new Set(["/admin", "/admin/", admin, `${admin}/`, "/api/admin"])],
     },
+    sitemap: "https://toaletepublice.com/sitemap.xml",
   };
 }

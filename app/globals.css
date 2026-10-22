@@ -873,6 +873,27 @@ h2 {
   text-align: center;
 }
 
+.share-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-url {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 4px;
+  padding: 7px 9px;
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.share-box .row {
+  flex-wrap: wrap;
+}
+
 .inline-ok {
   display: inline-flex;
   align-items: center;
