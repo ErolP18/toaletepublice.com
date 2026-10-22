@@ -50,4 +50,5 @@ export type ToiletDraft = {
   type: ToiletType;
   status: ToiletStatus;
   notes: string;
+  source?: string;
 };

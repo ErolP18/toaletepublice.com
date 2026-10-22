@@ -310,7 +310,7 @@ function ToiletDetails({ toilet, onBack }: { toilet: Toilet; onBack: () => void 
       {toilet.notes ? <p className="notes">{toilet.notes}</p> : null}
       <a
         className="primary block"
-        href={googleMapsPlaceUrl(toilet.lat, toilet.lng)}
+        href={googleMapsPlaceUrl(toilet.lat, toilet.lng, toilet.source)}
         target="_blank"
         rel="noreferrer"
       >

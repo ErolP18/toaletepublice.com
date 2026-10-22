@@ -1,9 +1,20 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const MAX_BYTES = 4 * 1024 * 1024;
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "toilets");
+const UPLOAD_DIRS = [
+  path.join(process.cwd(), "uploads", "toilets"),
+  path.join(process.cwd(), "public", "uploads", "toilets"),
+];
+const UPLOAD_DIR = UPLOAD_DIRS[0];
 const ID_PATTERN = /^[a-zA-Z0-9-]{8,80}$/;
+const FILE_PATTERN = /^[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp)$/i;
+const MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
 
 function sniffImage(bytes: Uint8Array): "jpg" | "png" | "webp" | null {
   if (bytes.length < 12) return null;
@@ -31,7 +42,7 @@ export function isUploadPath(value: string | null | undefined): value is string 
 async function removeFile(publicPath: string | null | undefined) {
   if (!isUploadPath(publicPath)) return;
   const filename = path.basename(publicPath);
-  await unlink(path.join(UPLOAD_DIR, filename)).catch(() => undefined);
+  await Promise.all(UPLOAD_DIRS.map((dir) => unlink(path.join(dir, filename)).catch(() => undefined)));
 }
 
 export async function saveToiletPhoto(id: string, file: File, previous?: string | null) {
@@ -53,4 +64,19 @@ export async function saveToiletPhoto(id: string, file: File, previous?: string 
 
 export async function deleteToiletPhoto(publicPath: string | null | undefined) {
   await removeFile(publicPath);
+}
+
+export async function readToiletPhoto(filename: string) {
+  const name = path.basename(filename);
+  if (!FILE_PATTERN.test(name)) return null;
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  for (const dir of UPLOAD_DIRS) {
+    try {
+      const bytes = await readFile(path.join(dir, name));
+      return { bytes: new Uint8Array(bytes), mime: MIME[ext] || "application/octet-stream" };
+    } catch {
+      continue;
+    }
+  }
+  return null;
 }

@@ -25,11 +25,10 @@ export function isGoogleMapsUrl(value: string) {
   }
 }
 
-export function googleMapsPlaceUrl(lat: number, lng: number) {
-  const url = new URL("https://www.google.com/maps/search/");
-  url.searchParams.set("api", "1");
-  url.searchParams.set("query", `${lat},${lng}`);
-  return url.toString();
+export function googleMapsPlaceUrl(lat: number, lng: number, source?: string) {
+  const original = source?.trim();
+  if (original && isGoogleMapsUrl(original)) return original;
+  return `https://www.google.com/maps?q=${lat},${lng}`;
 }
 
 export function parseLatLngPair(value: string): MapsPoint | null {

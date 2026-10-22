@@ -33,6 +33,13 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/admin/*": ["./node_modules/nodemailer/**/*"],
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: "/uploads/toilets/:file", destination: "/api/media/toilets/:file" },
+      ],
+    };
+  },
   async headers() {
     return [
       {

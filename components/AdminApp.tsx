@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { counties, toiletStatusLabels, toiletTypeLabels } from "@/lib/counties";
 import { fetchPlace } from "@/lib/geocode";
-import { googleMapsPlaceUrl, needsMapsResolve, parseMapsCoords } from "@/lib/maps";
+import { googleMapsPlaceUrl, isGoogleMapsUrl, needsMapsResolve, parseMapsCoords } from "@/lib/maps";
 import { findCity, isInsideRomaniaEnvelope, type MapStyleId } from "@/lib/romania";
 import type { SearchSuggestion } from "@/lib/suggest";
 import { matchesToilet, sortToilets } from "@/lib/toilets";
@@ -69,6 +69,8 @@ export default function AdminApp() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const photoBusyRef = useRef(false);
   const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([]);
   const [styleId] = useState<MapStyleId>("liberty");
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; zoom?: number } | null>(
@@ -165,14 +167,21 @@ export default function AdminApp() {
     };
   }
 
-  async function placeDraft(lat: number, lng: number) {
-    setDraft((current) => ({ ...(current ?? emptyDraft(lat, lng)), lat, lng }));
+  async function placeDraft(lat: number, lng: number, mapsUrl?: string) {
+    setDraft((current) => ({
+      ...(current ?? emptyDraft(lat, lng)),
+      lat,
+      lng,
+      ...(mapsUrl ? { source: mapsUrl } : {}),
+    }));
     const data = await reverseGeocode(lat, lng);
     setDraft((current) => (current ? { ...current, ...applyPlace(current, data) } : current));
   }
 
-  async function moveEdit(lat: number, lng: number) {
-    setEdit((current) => (current ? { ...current, lat, lng } : current));
+  async function moveEdit(lat: number, lng: number, mapsUrl?: string) {
+    setEdit((current) =>
+      current ? { ...current, lat, lng, ...(mapsUrl ? { source: mapsUrl } : {}) } : current,
+    );
     const data = await reverseGeocode(lat, lng);
     setEdit((current) =>
       current
@@ -257,24 +266,24 @@ export default function AdminApp() {
       setError("Folosește JPG, PNG sau WebP.");
       return;
     }
+    if (photoBusyRef.current) return;
     setError("");
+    setPhotoFile(ready);
     const current = editRef.current;
-    if (!current) {
-      setPhotoFile(ready);
-      return;
-    }
-    setBusy(true);
+    if (!current) return;
+    photoBusyRef.current = true;
+    setPhotoBusy(true);
     try {
       const saved = await uploadPhoto(current.id, ready);
-      await load();
-      setPhotoFile(null);
+      setToilets((list) => list.map((item) => (item.id === saved.id ? saved : item)));
       setEdit(saved);
       setNotice("Poza e salvată.");
+      window.setTimeout(() => setPhotoFile(null), 200);
     } catch (err) {
-      setPhotoFile(ready);
       setError(err instanceof Error ? err.message : "Nu am putut salva poza.");
     } finally {
-      setBusy(false);
+      photoBusyRef.current = false;
+      setPhotoBusy(false);
     }
   }
 
@@ -286,6 +295,8 @@ export default function AdminApp() {
     function onPaste(event: ClipboardEvent) {
       const file = fileFromClipboard(event.clipboardData);
       if (!file) return;
+      const text = event.clipboardData?.getData("text")?.trim() ?? "";
+      if (text && isTypingTarget(event.target)) return;
       event.preventDefault();
       void applyPhotoRef.current(file);
     }
@@ -320,7 +331,7 @@ export default function AdminApp() {
         await fetch("/api/admin/toilets", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...draft, source: "admin" }),
+          body: JSON.stringify({ ...draft, source: draft.source || "admin" }),
         }),
       );
       const saved = photoFile ? await uploadPhoto(data.id, photoFile) : data;
@@ -357,7 +368,7 @@ export default function AdminApp() {
       const saved = photoFile ? await uploadPhoto(edit.id, photoFile) : data;
       await load();
       setPhotoFile(null);
-      setEdit(saved);
+      setEdit({ ...saved, photo: saved.photo || edit.photo });
       setNotice("Modificările sunt salvate.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nu am putut salva.");
@@ -461,11 +472,12 @@ export default function AdminApp() {
               geocoding={geocoding}
               busy={busy}
               photoFile={photoFile}
+              photoBusy={photoBusy}
               onPhoto={(file) => void applyPhoto(file)}
               onChange={setDraft}
-              onPlace={(lat, lng) => {
+              onPlace={(lat, lng, mapsUrl) => {
                 setFlyTo({ lat, lng, zoom: 18 });
-                void placeDraft(lat, lng);
+                void placeDraft(lat, lng, mapsUrl);
               }}
               onSave={() => void saveNew()}
               onCancel={cancelAdd}
@@ -477,11 +489,12 @@ export default function AdminApp() {
               geocoding={geocoding}
               busy={busy}
               photoFile={photoFile}
+              photoBusy={photoBusy}
               onPhoto={(file) => void applyPhoto(file)}
               onChange={setEdit}
-              onPlace={(lat, lng) => {
+              onPlace={(lat, lng, mapsUrl) => {
                 setFlyTo({ lat, lng, zoom: 18 });
-                void moveEdit(lat, lng);
+                void moveEdit(lat, lng, mapsUrl);
               }}
               onSave={() => void saveEdit()}
               onCancel={() => {
@@ -570,6 +583,7 @@ function AdminForm({
   geocoding,
   busy,
   photoFile,
+  photoBusy,
   onPhoto,
   onChange,
   onPlace,
@@ -580,9 +594,10 @@ function AdminForm({
   geocoding: boolean;
   busy: boolean;
   photoFile: File | null;
+  photoBusy: boolean;
   onPhoto: (file: File) => void;
   onChange: (draft: ToiletDraft | null) => void;
-  onPlace: (lat: number, lng: number) => void;
+  onPlace: (lat: number, lng: number, mapsUrl?: string) => void;
   onSave: () => void;
   onCancel: () => void;
 }) {
@@ -612,7 +627,7 @@ function AdminForm({
       <p className="coords">
         {draft.lat.toFixed(6)}, {draft.lng.toFixed(6)}
         {geocoding ? " · citesc adresa…" : ""}{" "}
-        <a href={googleMapsPlaceUrl(draft.lat, draft.lng)} target="_blank" rel="noreferrer">
+        <a href={googleMapsPlaceUrl(draft.lat, draft.lng, draft.source)} target="_blank" rel="noreferrer">
           Google Maps
         </a>
       </p>
@@ -630,7 +645,7 @@ function AdminForm({
         free={draft.free}
         notes={draft.notes}
         photoFile={photoFile}
-        photoBusy={busy}
+        photoBusy={photoBusy}
         onPhoto={onPhoto}
         onChange={update}
         focusName
@@ -653,6 +668,7 @@ function EditForm({
   geocoding,
   busy,
   photoFile,
+  photoBusy,
   onPhoto,
   onChange,
   onPlace,
@@ -666,9 +682,10 @@ function EditForm({
   geocoding: boolean;
   busy: boolean;
   photoFile: File | null;
+  photoBusy: boolean;
   onPhoto: (file: File) => void;
   onChange: (toilet: Toilet) => void;
-  onPlace: (lat: number, lng: number) => void;
+  onPlace: (lat: number, lng: number, mapsUrl?: string) => void;
   onSave: () => void;
   onCancel: () => void;
   onDelete: () => void;
@@ -690,7 +707,7 @@ function EditForm({
       <p className="coords">
         {toilet.lat.toFixed(6)}, {toilet.lng.toFixed(6)}
         {geocoding ? " · citesc adresa…" : ""}{" "}
-        <a href={googleMapsPlaceUrl(toilet.lat, toilet.lng)} target="_blank" rel="noreferrer">
+        <a href={googleMapsPlaceUrl(toilet.lat, toilet.lng, toilet.source)} target="_blank" rel="noreferrer">
           Google Maps
         </a>
       </p>
@@ -709,7 +726,7 @@ function EditForm({
         notes={toilet.notes ?? ""}
         photo={toilet.photo}
         photoFile={photoFile}
-        photoBusy={busy}
+        photoBusy={photoBusy}
         photoImmediate
         onPhoto={onPhoto}
         onRemovePhoto={onRemovePhoto}
@@ -926,7 +943,7 @@ function Fields({
   );
 }
 
-function MapsPasteField({ onPlace }: { onPlace: (lat: number, lng: number) => void }) {
+function MapsPasteField({ onPlace }: { onPlace: (lat: number, lng: number, mapsUrl?: string) => void }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -941,7 +958,7 @@ function MapsPasteField({ onPlace }: { onPlace: (lat: number, lng: number) => vo
         setError("Locul pare în afara României.");
         return;
       }
-      onPlace(local.lat, local.lng);
+      onPlace(local.lat, local.lng, isGoogleMapsUrl(text) ? text : undefined);
       setValue("");
       return;
     }
@@ -957,7 +974,7 @@ function MapsPasteField({ onPlace }: { onPlace: (lat: number, lng: number) => vo
         setError(data.error || "Nu am găsit coordonatele.");
         return;
       }
-      onPlace(data.lat, data.lng);
+      onPlace(data.lat, data.lng, isGoogleMapsUrl(text) ? text : undefined);
       setValue("");
     } catch {
       setError("Nu am putut citi linkul.");
@@ -1005,11 +1022,24 @@ const PHOTO_TYPES: Record<string, string> = {
 };
 
 function namedImage(file: File) {
-  const type = file.type === "image/jpg" ? "image/jpeg" : file.type;
-  const ext = PHOTO_TYPES[type];
-  if (!ext) return null;
-  const name = file.name && file.name.includes(".") ? file.name : `poza.${ext}`;
-  return new File([file], name, { type: type === "image/jpg" ? "image/jpeg" : type });
+  const rawType = file.type === "image/jpg" ? "image/jpeg" : file.type;
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+  const ext =
+    PHOTO_TYPES[rawType] ||
+    (fromName === "jpeg" || fromName === "jpg" ? "jpg" : fromName === "png" ? "png" : fromName === "webp" ? "webp" : "");
+  if (!ext && rawType && !rawType.startsWith("image/")) return null;
+  const type = rawType || (ext === "jpg" ? "image/jpeg" : ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/png");
+  const name = file.name && file.name.includes(".") ? file.name : `poza.${ext || "png"}`;
+  return new File([file], name, { type });
+}
+
+function isTypingTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target instanceof HTMLTextAreaElement) return true;
+  if (target instanceof HTMLInputElement) {
+    return target.type !== "file" && target.type !== "checkbox" && target.type !== "radio";
+  }
+  return target.isContentEditable;
 }
 
 function fileFromClipboard(data: DataTransfer | null) {
@@ -1061,7 +1091,9 @@ function PhotoField({
         if (file) onPhoto(file);
       }}
     >
-      {shown ? <img src={shown} alt="" className="photo-preview" /> : null}
+      {shown ? (
+        <img src={shown} alt="" className="photo-preview" decoding="async" />
+      ) : null}
       <label>
         Poză
         <input

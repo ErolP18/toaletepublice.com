@@ -208,6 +208,11 @@ export default function MailDesk() {
 
   const ready = Boolean(to.trim() && subject.trim() && body.trim() && mail?.configured);
   const batchList = institutions.filter((item) => batchIds.includes(item.id));
+  const outbox = mail?.outbox ?? [];
+  const institutionsById = useMemo(
+    () => new Map(institutions.map((item) => [item.id, item])),
+    [institutions],
+  );
 
   const institutionOptions = useMemo(
     () =>
@@ -215,13 +220,20 @@ export default function MailDesk() {
     [institutions, institutionId],
   );
 
+  function openOutboxRow(row: MailOutboxRow) {
+    setTo(row.toEmail);
+    if (row.institutionId) pickInstitution(row.institutionId);
+    if (row.templateId) setTemplateId(row.templateId);
+  }
+
   return (
     <div className="app-shell">
       <AdminNav current="mail" />
       {notice ? <p className="banner">{notice}</p> : null}
       {error ? <p className="banner warn">{error}</p> : null}
 
-      <div className="desk">
+      <div className="desk desk-mail">
+        <div className="mail-main">
         <header className="desk-head">
           <div>
             <h1>Mail</h1>
@@ -372,43 +384,44 @@ export default function MailDesk() {
             </button>
           </div>
         </section>
+        </div>
 
-        <section className="desk-section">
-          <h2>Trimise din site</h2>
-          {(mail?.outbox ?? []).length === 0 ? (
+        <aside className="mail-outbox" aria-label="Mesaje trimise">
+          <header className="mail-outbox-head">
+            <h2>Trimise</h2>
+            <p className="hint">{outbox.length ? `${outbox.length} în jurnal` : "Gol"}</p>
+          </header>
+          {loading ? (
+            <p className="hint">Se încarcă…</p>
+          ) : outbox.length === 0 ? (
             <p className="empty">Încă nu ai trimis nimic de aici.</p>
           ) : (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Către</th>
-                  <th>Subiect</th>
-                  <th>Status SMTP</th>
-                  <th>Data</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(mail?.outbox ?? []).map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.toEmail}</td>
-                    <td>{row.subject}</td>
-                    <td>
+            <ul className="mail-outbox-list">
+              {outbox.map((row) => {
+                const institution = row.institutionId ? institutionsById.get(row.institutionId) : undefined;
+                const active = row.toEmail === to && (!row.institutionId || row.institutionId === institutionId);
+                return (
+                  <li key={row.id}>
+                    <button
+                      type="button"
+                      className={active ? "mail-outbox-item is-active" : "mail-outbox-item"}
+                      onClick={() => openOutboxRow(row)}
+                    >
+                      <strong>{institution?.name || row.toEmail}</strong>
+                      <span>{row.subject}</span>
                       <em>
+                        {new Date(row.createdAt).toLocaleString("ro-RO")}
+                        {" · "}
                         {outboxStatusLabels[row.status] || "Acceptat de SMTP"}
-                        {row.templateId ? ` · ${row.templateId}` : ""}
-                        {row.messageId ? ` · ${row.messageId}` : ""}
                         {row.error ? ` — ${row.error}` : ""}
                       </em>
-                    </td>
-                    <td>
-                      <em>{new Date(row.createdAt).toLocaleString("ro-RO")}</em>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           )}
-        </section>
+        </aside>
       </div>
     </div>
   );
