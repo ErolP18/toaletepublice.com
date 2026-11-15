@@ -2,7 +2,7 @@ name: Build Docker image
 
 on:
   push:
-    branches: [main, migrate-docker]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,21 @@ jobs:
         env:
           BUILD_ENV: ${{ secrets.BUILD_ENV }}
         run: printf '%s\n' "$BUILD_ENV" > "$RUNNER_TEMP/build.env"
-      - uses: docker/build-push-action@v6
+      # Build-ul poate pica ocazional din cauza Google Fonts (limitare temporara) -> o reincercare automata
+      - id: build1
+        uses: docker/build-push-action@v6
+        continue-on-error: true
+        with:
+          context: .
+          push: true
+          secret-files: buildenv=${{ runner.temp }}/build.env
+          tags: |
+            ghcr.io/erolp18/toaletepublice.com:${{ github.sha }}
+            ghcr.io/erolp18/toaletepublice.com:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - if: steps.build1.outcome == 'failure'
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
