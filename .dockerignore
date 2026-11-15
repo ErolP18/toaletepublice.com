@@ -4,12 +4,11 @@ node_modules
 .env
 .env.*
 !.env.example
-*.md
-.cursor
-.vscode
-coverage
 *.db
 *.db-shm
 *.db-wal
-public/uploads
-public/maplibre
+.cursor
+.vscode
+coverage
+Dockerfile
+.dockerignore

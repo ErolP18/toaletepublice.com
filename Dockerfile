@@ -1,36 +1,31 @@
-FROM node:22-alpine AS base
-RUN apk add --no-cache libc6-compat
+# syntax=docker/dockerfile:1.7
+# Imagine de productie Next.js (standalone). Generata la migrarea de pe Coolify.
+# Node 22.11.0 = aceeasi versiune care rula in Coolify.
+FROM node:22.11.0-bookworm-slim AS base
 WORKDIR /app
-
-FROM base AS deps
-COPY package.json package-lock.json ./
-RUN npm ci
+ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
+# unelte pentru module native (ex. better-sqlite3) daca nu exista binar precompilat
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-ARG NEXT_PUBLIC_ADMIN_PATH
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-ENV NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-ENV NEXT_PUBLIC_ADMIN_PATH=$NEXT_PUBLIC_ADMIN_PATH
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-RUN npm run postinstall && npm run build
+RUN if grep -q '"postinstall"' package.json; then npm run postinstall; fi
+# Variabilele de build vin ca secret (nu raman in imagine), la fel ca in Coolify
+RUN --mount=type=secret,id=buildenv,target=/app/.env.production,required=false \
+    npm run build
 
 FROM base AS runner
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 nextjs
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-RUN mkdir -p /app/public/uploads/toilets /app/uploads/toilets /app/private/uploads/replies \
-  && chown -R nextjs:nodejs /app/public /app/uploads /app/private
-USER nextjs
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+COPY --from=builder --chown=node:node /app/data ./data
+USER node
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "server.js"]
